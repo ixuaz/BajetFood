@@ -586,7 +586,7 @@
                             <p class="text-xs text-slate-400 font-medium">Monitor daily ingredient batches, surplus meals, and dynamic pricing</p>
                         </div>
                         <!-- RESTRICTED BUTTON: Add Surplus Batch -->
-                        <button id="btn-add-surplus" onclick="handleAddSurplus()" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
+                        <button id="btn-add-surplus" onclick="openAddSurplusModal()" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
                             <i class="fa-solid fa-plus mr-1.5"></i> Add Surplus Batch
                         </button>
                     </div>
@@ -890,584 +890,586 @@
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+    <!-- ADD SURPLUS MODAL OVERLAY -->
+    <div id="modal-surplus" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeAddSurplusModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-fade-in relative z-10">
+                <div class="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white">Add Surplus Batch</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Register excess meals for bajet pricing sale.</p>
+                    </div>
+                    <button onclick="closeAddSurplusModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <form id="surplus-form" onsubmit="handleSurplusSubmit(event)" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Select Original Item</label>
+                        <select id="surplus-item-select" required class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none">
+                            <option value="">Choose item...</option>
+                            <!-- Injected via JS -->
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Surplus Quantity</label>
+                        <input type="number" id="surplus-quantity" required min="1" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Standard Price (RM)</label>
+                            <input type="text" id="surplus-standard-price" disabled class="w-full px-4 py-3 bg-slate-900/50 border border-slate-800 rounded-2xl text-sm text-slate-400 cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-brand-400 uppercase tracking-wider mb-2">Bajet Price (RM)</label>
+                            <input type="number" id="surplus-bajet-price" required step="0.5" min="0" class="w-full px-4 py-3 bg-slate-950 border border-brand-500/50 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <p class="text-[10px] text-slate-500 mt-1">Recommended ~50% off standard.</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 mt-6 flex justify-end space-x-3">
+                        <button type="button" onclick="closeAddSurplusModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-brand-600/20 transition-all">
+                            Publish Surplus Batch
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- MAIN JAVASCRIPT LOGIC -->
     <script>
-        let currentRole = 'admin';
+        // SYSTEM STATE & DATA MOCKUPS
+        let currentRole = null;
+        let currentUser = null;
 
-        let ordersData = [
-            { id: "BF-1092", customer: "Aisyah (UiTM Kolej Melati)", phone: "60123456789", items: "3x Nasi Lemak Bungkus, 2x Teh Tarik", total: "RM 21.50", status: "Ready for Pickup" },
-            { id: "BF-1093", customer: "Dr. Rina (Hospital Seremban)", phone: "60198765432", items: "2x Mee Goreng Mamak, 1x Mineral Water", total: "RM 16.00", status: "In Transit" },
-            { id: "BF-1094", customer: "Farhan (Fakulti Sains Komputer)", phone: "60181122334", items: "4x Kuih Seri Muka, 2x Neslo Ais", total: "RM 14.80", status: "Delivered" },
-            { id: "BF-1095", customer: "Zulkifli (Labu Police HQ)", phone: "60133334444", items: "5x Nasi Ayam Special", total: "RM 45.00", status: "Preparing" },
-            { id: "BF-1096", customer: "Siti Nurhaliza (Kolej Kediaman Tun Dr Ismail)", phone: "60177778888", items: "2x Roti Canai Banjir", total: "RM 6.50", status: "Pending" }
-        ];
+        const dummyData = {
+            inventory: [
+                { id: 'INV001', name: 'Nasi Ayam Penyet Combo', category: 'Hot Meals', stock: 24, stdPrice: 12.00, surpPrice: 6.00, status: 'Active Listing' },
+                { id: 'INV002', name: 'Mee Goreng Mamak Special', category: 'Hot Meals', stock: 15, stdPrice: 8.50, surpPrice: 4.00, status: 'Active Listing' },
+                { id: 'INV003', name: 'Teh O Ais Limau Jumbo', category: 'Beverages', stock: 40, stdPrice: 3.50, surpPrice: 0.00, status: 'Standard Selling' },
+                { id: 'INV004', name: 'Kuih Lapis Traditional (Pack)', category: 'Snacks / Desserts', stock: 0, stdPrice: 5.00, surpPrice: 2.50, status: 'Out of Stock' }
+            ],
+            orders: [
+                { id: 'ORD-7742', customer: 'Ahmad Faiz (UiTM Melati B)', items: '2x Nasi Ayam Penyet Combo', total: 24.00, status: 'Awaiting Kitchen Prep' },
+                { id: 'ORD-7741', customer: 'Siti Nurhaliza (Kolej Cempaka)', items: '1x Mee Goreng Mamak Special', total: 8.50, status: 'Kitchen Preparing' },
+                { id: 'ORD-7740', customer: 'David Lim (Labu Comm Center)', items: 'Surplus Nasi Ayam', total: 6.00, status: 'Ready for Rider Pickup' },
+                { id: 'ORD-7739', customer: 'Aminah (Hospital Seremban Qtrs)', items: '3x Teh O Ais Limau', total: 10.50, status: 'Rider Dispatched (Fleet A)' }
+            ],
+            payments: [
+                { id: 'TXN-998822', date: '21 Sep 2026 14:30', ref: 'ORD-7742', amount: 24.00, method: 'FPX / Maybank2u', status: 'Settled & Verified' },
+                { id: 'TXN-998821', date: '21 Sep 2026 14:15', ref: 'ORD-7741', amount: 8.50, method: 'TNG eWallet', status: 'Settled & Verified' },
+                { id: 'TXN-998820', date: '21 Sep 2026 13:45', ref: 'ORD-7740', amount: 6.00, method: 'BajetWallet Credit', status: 'Settled & Verified' }
+            ],
+            driverTasks: [
+                { id: 'ORD-7740', dest: 'Labu Comm Center Hub', items: 'Surplus Nasi Ayam', contact: '+6011223344', status: 'Pickup Pending' },
+                { id: 'ORD-7739', dest: 'Hospital Seremban Qtrs', items: '3x Teh O Ais Limau', contact: '+6019988776', status: 'En Route (Est 4 mins)' }
+            ],
+            driverEarnings: [
+                { date: 'Today (21 Sep)', trips: 8, commission: 40.00, status: 'Pending Cycle End' },
+                { date: 'Yesterday (20 Sep)', trips: 15, commission: 75.00, status: 'Cleared to Wallet' },
+                { date: '19 Sep 2026', trips: 12, commission: 60.00, status: 'Bank Transfer Complete' }
+            ],
+            adminCheckins: [
+                { member: 'Muhammad Najmuddin (PM)', station: 'Labu HQ Command Center', ip: 'Sec-Node-Alpha (192.168.1.12)', time: '21 Sep 08:30 AM' },
+                { member: 'Adibah Afina (BA / Doc)', station: 'UiTM Melati Audit Hub', ip: 'Sec-Node-Beta (192.168.1.45)', time: '21 Sep 09:15 AM' }
+            ]
+        };
 
-        let inventoryData = [
-            { name: "Nasi Lemak Bungkus Daun Pisang", category: "Mains", stock: "45 packs", standardPrice: "RM 3.50", bajetPrice: "RM 2.00", status: "Surplus Active" },
-            { name: "Mee Goreng Mamak Panas", category: "Noodles", stock: "28 plates", standardPrice: "RM 7.00", bajetPrice: "RM 4.50", status: "Normal Stock" },
-            { name: "Kuih Seri Muka (Box of 4)", category: "Dessert", stock: "12 boxes", standardPrice: "RM 5.00", bajetPrice: "RM 3.00", status: "Low Stock" },
-            { name: "Nasi Ayam Madu Special", category: "Mains", stock: "34 packs", standardPrice: "RM 9.00", bajetPrice: "RM 6.00", status: "Normal Stock" }
-        ];
+        const roleConfig = {
+            admin: {
+                name: 'System Admin HQ',
+                initials: 'HQ',
+                subtitle: 'Core Operations Center',
+                nav: [
+                    { id: 'dashboard', icon: 'fa-chart-line', label: 'Command Hub' },
+                    { id: 'team', icon: 'fa-users-gear', label: 'Core Team Planning' },
+                    { id: 'orders', icon: 'fa-receipt', label: 'Network Orders' },
+                    { id: 'inventory', icon: 'fa-boxes-stacked', label: 'Global Inventory' },
+                    { id: 'deliveries', icon: 'fa-truck-fast', label: 'Fleet Logistics' },
+                    { id: 'payments', icon: 'fa-money-bill-transfer', label: 'Settlements Ledger' },
+                    { id: 'reports', icon: 'fa-file-contract', label: 'Audit & Reports' },
+                    { id: 'admin-checkin', icon: 'fa-user-shield', label: 'Core Check-In' }
+                ],
+                defaultEmail: 'Najmuddin.bj@bajetfood.my'
+            },
+            vendor: {
+                name: 'Vendor Partner Alpha',
+                initials: 'VA',
+                subtitle: 'Labu Central Kitchen Node',
+                nav: [
+                    { id: 'orders', icon: 'fa-receipt', label: 'Kitchen Orders' },
+                    { id: 'inventory', icon: 'fa-boxes-stacked', label: 'Menu & Stock Control' },
+                    { id: 'payments', icon: 'fa-money-bill-transfer', label: 'Payout History' }
+                ],
+                defaultEmail: 'kitchen.labu@vendor.bajetfood.my'
+            },
+            driver: {
+                name: 'Fleet Rider Unit A',
+                initials: 'RA',
+                subtitle: 'Active Delivery Ops',
+                nav: [
+                    { id: 'driver-tasks', icon: 'fa-list-check', label: 'My Job Queue' },
+                    { id: 'driver-map', icon: 'fa-map-location-dot', label: 'GPS Navigator' },
+                    { id: 'driver-earnings', icon: 'fa-wallet', label: 'My Earnings' }
+                ],
+                defaultEmail: 'rider.azman@fleet.bajetfood.my'
+            }
+        };
 
-        let paymentsData = [
-            { id: "TXN-90821", date: "Today, 08:45 AM", order: "BF-1092", amount: "RM 21.50", gateway: "FPX Online Banking", status: "Success" },
-            { id: "TXN-90820", date: "Today, 08:12 AM", order: "BF-1093", amount: "RM 16.00", gateway: "DuitNow QR", status: "Success" },
-            { id: "TXN-90819", date: "Yesterday, 06:30 PM", order: "BF-1088", amount: "RM 38.20", gateway: "Touch 'n Go eWallet", status: "Settled" }
-        ];
-
-        let adminCheckIns = [
-            { admin: "Muhammad Najmuddin (PM)", station: "Labu HQ Command Center", device: "192.168.1.101 (Secure 5G)", time: "Today, 08:00 AM" },
-            { admin: "Adibah Afina (BA / Doc)", station: "Documentation Hub", device: "192.168.1.102 (Secure 5G)", time: "Today, 08:15 AM" },
-            { admin: "Norafnizaini (Tech Lead / QA / Mkt)", station: "Development & QA Server", device: "192.168.1.103 (Secure 5G)", time: "Today, 08:30 AM" },
-            { admin: "Vivian (Project Planner)", station: "Strategy & Planning Office", device: "192.168.1.104 (Secure 5G)", time: "Today, 08:45 AM" }
-        ];
-
-        let driverTasks = [
-            { id: "BF-1092", destination: "UiTM Kolej Melati (Gate B)", items: "3x Nasi Lemak Bungkus", status: "Ready for Pickup", contact: "Aisyah (012-3456789)" },
-            { id: "BF-1095", destination: "Hospital Seremban Canteen", items: "2x Mee Goreng Mamak", status: "In Transit", contact: "Dr. Rina (019-8765432)" },
-            { id: "BF-1097", destination: "Fakulti Sains Komputer", items: "4x Kuih Seri Muka", status: "Delivered", contact: "Farhan (018-1122334)" }
-        ];
-
-        let driverEarnings = [
-            { date: "Today, Sep 21", deliveries: "8 trips", commission: "RM 40.00", status: "Verified" },
-            { date: "Yesterday, Sep 20", deliveries: "12 trips", commission: "RM 60.00", status: "Paid Out" }
-        ];
-
-        let salesChartInstance = null;
-
+        // CORE FUNCTIONS
         function updateDefaultEmail() {
             const role = document.getElementById('login-role').value;
-            const emailInput = document.getElementById('login-email');
-            const emailHint = document.getElementById('email-hint');
-
-            if (role === 'admin') {
-                emailInput.value = 'Najmuddin.bj@bajetfood.my';
-                if (emailHint) emailHint.innerText = 'Authorized core team email required (e.g. Najmuddin.bj@bajetfood.my)';
-            } else if (role === 'vendor') {
-                emailInput.value = 'Aisyah.vp@bajetfood.my';
-                if (emailHint) emailHint.innerText = 'Authorized Vendor Partner email required (e.g. Aisyah.vp@bajetfood.my)';
-            } else if (role === 'driver') {
-                emailInput.value = 'azman.r@bajetfood.my';
-                if (emailHint) emailHint.innerText = 'Authorized delivery rider email required (e.g. azman.r@bajetfood.my)';
-            }
-        }
-
-        // RBAC: Function to visually update restricted HTML buttons
-        function updateRestrictedUI() {
-            const restrictedButtons = ['btn-sync-team', 'btn-add-surplus', 'btn-admin-checkin'];
-            restrictedButtons.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    if (currentRole !== 'admin') {
-                        btn.classList.add('opacity-50', 'cursor-not-allowed');
-                    } else {
-                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    }
-                }
-            });
+            document.getElementById('login-email').value = roleConfig[role].defaultEmail;
         }
 
         function handleLogin(e) {
             e.preventDefault();
-            const roleSelect = document.getElementById('login-role');
-            const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
-            currentRole = roleSelect.value;
+            const role = document.getElementById('login-role').value;
+            currentRole = role;
+            currentUser = roleConfig[role];
 
-            const profileName = document.getElementById('user-profile-name');
-            const profileSubtitle = document.getElementById('user-profile-subtitle');
-            const profileInitials = document.getElementById('user-profile-initials');
-
-            if (currentRole === 'admin') {
-                const adminAccounts = {
-                    'najmuddin.bj@bajetfood.my': { name: 'Muhammad Najmuddin', role: 'Project Manager', init: 'MN' },
-                    'adibah.bj@bajetfood.my': { name: 'Adibah Afina', role: 'Business Analyst / Doc', init: 'AA' },
-                    'norafnizaini.bj@bajetfood.my': { name: 'Norafnizaini', role: 'Tech Lead / QA', init: 'NF' },
-                    'vivian.bj@bajetfood.my': { name: 'Vivian', role: 'Project Planner', init: 'VV' }
-                };
-                if (!adminAccounts[emailInput]) {
-                    showToast('Access Denied: Unrecognized core team email address.', 'error'); return;
-                }
-                const admin = adminAccounts[emailInput];
-                profileName.innerText = admin.name;
-                profileSubtitle.innerText = admin.role + ' (Core Team)';
-                profileInitials.innerText = admin.init;
-
-            } else if (currentRole === 'vendor') {
-                const vendorAccounts = {
-                    'aisyah.vp@bajetfood.my': { name: 'Aisyah', role: 'Vendor Partner / Kitchen Lead', init: 'AY' },
-                    'rina.vp@bajetfood.my': { name: 'Dr. Rina', role: 'Vendor Partner / Kitchen Lead', init: 'DR' },
-                    'farhan.vp@bajetfood.my': { name: 'Farhan', role: 'Vendor Partner / Kitchen Lead', init: 'FH' },
-                    'zulkifli.vp@bajetfood.my': { name: 'Zulkifli', role: 'Vendor Partner / Kitchen Lead', init: 'ZK' },
-                    'nurhaliza@bajetfood.my': { name: 'Siti Nurhaliza', role: 'Vendor Partner / Kitchen Lead', init: 'SN' },
-                    'nurhaliza.vp@bajetfood.my': { name: 'Siti Nurhaliza', role: 'Vendor Partner / Kitchen Lead', init: 'SN' }
-                };
-                if (!vendorAccounts[emailInput]) {
-                    showToast('Access Denied: Unrecognized vendor partner email address.', 'error'); return;
-                }
-                const vendor = vendorAccounts[emailInput];
-                profileName.innerText = vendor.name;
-                profileSubtitle.innerText = vendor.role;
-                profileInitials.innerText = vendor.init;
-
-            } else if (currentRole === 'driver') {
-                const driverAccounts = {
-                    'azman.r@bajetfood.my': { name: 'Azman Rider', role: 'Fleet Unit A (Labu)', init: 'AR' },
-                    'muthu.r@bajetfood.my': { name: 'Muthu Kumar', role: 'Fleet Unit B (Campus)', init: 'MK' }
-                };
-                if (!driverAccounts[emailInput]) {
-                    showToast('Access Denied: Unrecognized delivery rider email address.', 'error'); return;
-                }
-                const driver = driverAccounts[emailInput];
-                profileName.innerText = driver.name;
-                profileSubtitle.innerText = driver.role;
-                profileInitials.innerText = driver.init;
-            }
-
+            // Setup UI
+            document.getElementById('user-profile-name').textContent = currentUser.name;
+            document.getElementById('user-profile-subtitle').textContent = currentUser.subtitle;
+            document.getElementById('user-profile-initials').textContent = currentUser.initials;
+            
+            buildSidebarNav();
+            
+            // Switch view
             document.getElementById('view-auth').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
-
-            renderNavigationForRole();
-            updateRestrictedUI();
             
-            if (currentRole === 'vendor') switchTab('dashboard');
-            else if (currentRole === 'driver') switchTab('driver-tasks');
-            else if (currentRole === 'admin') switchTab('dashboard');
-
-            showToast(`Signed in successfully as ${profileName.innerText} (${currentRole.toUpperCase()}).`, 'success');
-
-            initDashboardChart();
-            renderAllTables();
-        }
-
-        function renderNavigationForRole() {
-            const navContainer = document.getElementById('sidebar-nav');
-            let html = '';
-
-            if (currentRole === 'vendor') {
-                html = `
-                    <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="dashboard">
-                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i> <span>Dashboard</span>
-                    </button>
-                    <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="orders">
-                        <i class="fa-solid fa-receipt w-5 text-sm"></i> <span>Manage Orders</span>
-                        <span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold">12</span>
-                    </button>
-                    <button onclick="switchTab('deliveries')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="deliveries">
-                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i> <span>Delivery Tracking</span>
-                    </button>
-                    <button onclick="switchTab('inventory')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="inventory">
-                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i> <span>Inventory & Waste</span>
-                    </button>
-                    <button onclick="switchTab('payments')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="payments">
-                        <i class="fa-solid fa-wallet w-5 text-sm"></i> <span>Payment Records</span>
-                    </button>
-                    <button onclick="switchTab('reports')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="reports">
-                        <i class="fa-solid fa-file-lines w-5 text-sm"></i> <span>Reports & Analytics</span>
-                    </button>
-                `;
-            } else if (currentRole === 'driver') {
-                html = `
-                    <button onclick="switchTab('driver-tasks')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="driver-tasks">
-                        <i class="fa-solid fa-person-biking w-5 text-sm"></i> <span>Assigned Deliveries</span>
-                        <span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold">3</span>
-                    </button>
-                    <button onclick="switchTab('driver-map')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="driver-map">
-                        <i class="fa-solid fa-map-location-dot w-5 text-sm"></i> <span>Route GPS Navigator</span>
-                    </button>
-                    <button onclick="switchTab('driver-earnings')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="driver-earnings">
-                        <i class="fa-solid fa-hand-holding-dollar w-5 text-sm"></i> <span>Trip Earnings & Payouts</span>
-                    </button>
-                `;
-            } else if (currentRole === 'admin') {
-                html = `
-                    <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="dashboard">
-                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i> <span>System Dashboard</span>
-                    </button>
-                    <button onclick="switchTab('team')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="team">
-                        <i class="fa-solid fa-users-gear w-5 text-sm"></i> <span>Core Team Roles</span>
-                        <span class="ml-auto bg-brand-500/10 text-brand-400 border border-brand-500/20 text-[10px] px-1.5 py-0.5 rounded font-extrabold">4 MEMBERS</span>
-                    </button>
-                    <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="orders">
-                        <i class="fa-solid fa-receipt w-5 text-sm"></i> <span>All System Orders</span>
-                    </button>
-                    <button onclick="switchTab('deliveries')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="deliveries">
-                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i> <span>Fleet Dispatch Control</span>
-                    </button>
-                    <button onclick="switchTab('inventory')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="inventory">
-                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i> <span>Vendor Inventories</span>
-                    </button>
-                    <button onclick="switchTab('payments')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="payments">
-                        <i class="fa-solid fa-wallet w-5 text-sm"></i> <span>Financial Ledgers</span>
-                    </button>
-                    <button onclick="switchTab('reports')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="reports">
-                        <i class="fa-solid fa-file-lines w-5 text-sm"></i> <span>System Reports</span>
-                    </button>
-                    <button onclick="switchTab('admin-checkin')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="admin-checkin">
-                        <i class="fa-solid fa-user-shield w-5 text-sm"></i> <span>Team Security Check-In</span>
-                        <span class="ml-auto bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] px-1.5 py-0.5 rounded font-extrabold">SECURE</span>
-                    </button>
-                `;
-            }
-            navContainer.innerHTML = html;
+            // Initialize data
+            renderTables();
+            initChart();
+            startClock();
+            
+            // Navigate to default tab
+            switchTab(currentUser.nav[0].id);
+            showToast(`Portal access granted. Connected to ${currentUser.name} network.`, 'success');
         }
 
         function logout() {
+            currentRole = null;
+            currentUser = null;
             document.getElementById('app-container').classList.add('hidden');
             document.getElementById('view-auth').classList.remove('hidden');
-            showToast('Signed out securely.', 'info');
+            showToast('Securely disconnected from portal.', 'info');
+        }
+
+        function buildSidebarNav() {
+            const navContainer = document.getElementById('sidebar-nav');
+            navContainer.innerHTML = '';
+            
+            currentUser.nav.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-900 transition-all nav-btn';
+                btn.id = `nav-btn-${item.id}`;
+                btn.onclick = () => switchTab(item.id);
+                btn.innerHTML = `<i class="fa-solid ${item.icon} w-5"></i><span>${item.label}</span>`;
+                navContainer.appendChild(btn);
+            });
         }
 
         function switchTab(tabId) {
-            if (currentRole === 'driver' && !tabId.startsWith('driver-')) {
-                showToast('Access Denied: Drivers can only access delivery task & GPS tabs.', 'error');
-                return;
-            }
-            if (currentRole === 'vendor' && tabId.startsWith('driver-')) {
-                showToast('Access Denied: Vendors cannot access driver telemetry tabs.', 'error');
-                return;
-            }
-            if ((tabId === 'admin-checkin' || tabId === 'team') && currentRole !== 'admin') {
-                showToast('Access Denied: Core Team portal is restricted to administrative project leaders!', 'error');
+            // Check authorization
+            if (!currentUser.nav.find(item => item.id === tabId) && tabId !== 'dashboard') {
+                showToast('Unauthorized portal area.', 'error');
                 return;
             }
 
+            // Hide all tabs
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-            const targetTab = document.getElementById('tab-' + tabId);
-            if (targetTab) targetTab.classList.remove('hidden');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-gradient-to-r', 'from-brand-600', 'to-brand-800', 'to-emerald-600', 'text-white', 'shadow-lg', 'shadow-brand-900/30');
-                btn.classList.add('hover:bg-slate-900', 'text-slate-400', 'hover:text-white');
+            // Reset nav buttons
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-brand-500/10', 'text-brand-400', 'border', 'border-brand-500/20');
+                el.classList.add('text-slate-400', 'hover:bg-slate-900');
             });
 
-            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
-            if (activeBtn) {
-                activeBtn.classList.add('bg-gradient-to-r', 'from-brand-600', 'to-brand-800', 'text-white', 'shadow-lg', 'shadow-brand-900/30');
-                activeBtn.classList.remove('hover:bg-slate-900', 'text-slate-400', 'hover:text-white');
+            // Show selected tab
+            const tabEl = document.getElementById(`tab-${tabId}`);
+            if (tabEl) {
+                tabEl.classList.remove('hidden');
+            } else {
+                console.error(`Tab tab-${tabId} not found`);
             }
 
-            const titles = {
-                'dashboard': 'Core Team Command Dashboard',
-                'team': 'BajetFood Core Team Roles & Responsibilities',
-                'orders': 'Manage Food Orders',
-                'deliveries': 'Real-Time Delivery & Dispatch Tracking',
-                'inventory': 'Inventory & Waste Reduction Management',
-                'payments': 'Payment Records & Ledgers',
-                'reports': 'Reports & System Analytics',
-                'admin-checkin': 'Core Team Check-In & Security Audit',
-                'driver-tasks': 'Assigned Delivery Tasks & Pickup Queue',
-                'driver-map': 'Live GPS Route Navigator & Campus Hubs',
-                'driver-earnings': 'Trip Earnings & Commission Payouts'
-            };
-            document.getElementById('page-title').innerText = titles[tabId] || 'BajetFood Portal';
-        }
-
-        function initDashboardChart() {
-            const ctx = document.getElementById('salesChart');
-            if (!ctx) return;
-            if (salesChartInstance) salesChartInstance.destroy();
-
-            salesChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['08:00', '10:00', '12:00 (Lunch)', '14:00', '16:00', '18:00 (Dinner)', '20:00'],
-                    datasets: [{
-                        label: 'Gross Sales (RM)',
-                        data: [45, 120, 380, 210, 150, 420, 190],
-                        borderColor: '#9d0759',
-                        backgroundColor: 'rgba(157, 7, 89, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#9d0759',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        pointHoverRadius: 7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } } },
-                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } } }
-                    }
-                }
-            });
-        }
-
-        function renderAllTables() {
-            renderRecentOrders();
-            renderFullOrders();
-            renderInventory();
-            renderPayments();
-            renderAdminCheckIns();
-            renderDriverTasks();
-            renderDriverEarnings();
-        }
-
-        function renderRecentOrders() {
-            const tbody = document.getElementById('recent-orders-table');
-            if (!tbody) return;
-            tbody.innerHTML = ordersData.slice(0, 3).map(o => {
-                // RBAC: Restricted Button Logic 
-                const actionBtn = currentRole === 'admin' 
-                    ? `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Process</button>`
-                    : `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-slate-500 bg-slate-800 font-bold px-3 py-1.5 rounded-xl transition-all cursor-not-allowed">Restricted</button>`;
-                
-                return `
-                <tr class="hover:bg-slate-900/50 transition-colors">
-                    <td class="py-4 px-6 font-extrabold text-white">${o.id}</td>
-                    <td class="py-4 px-6">
-                        <div class="text-slate-300 font-medium">${o.customer}</div>
-                        <a href="https://wa.me/${o.phone}" target="_blank" class="inline-flex items-center mt-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-                            <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> WhatsApp Customer
-                        </a>
-                    </td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${o.items}</td>
-                    <td class="py-4 px-6 font-bold text-white">${o.total}</td>
-                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(o.status)}">${o.status}</span></td>
-                    <td class="py-4 px-6 text-right">${actionBtn}</td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        function renderFullOrders() {
-            const tbody = document.getElementById('full-orders-table');
-            if (!tbody) return;
-            tbody.innerHTML = ordersData.map(o => {
-                // RBAC: Restricted Button Logic 
-                const actionBtn = currentRole === 'admin' 
-                    ? `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Advance</button>`
-                    : `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-slate-500 bg-slate-800 font-bold px-3 py-1.5 rounded-xl transition-all cursor-not-allowed">Restricted</button>`;
-                
-                return `
-                <tr class="hover:bg-slate-900/50 transition-colors">
-                    <td class="py-4 px-6 font-extrabold text-white">${o.id}</td>
-                    <td class="py-4 px-6">
-                        <div class="text-slate-300 font-medium">${o.customer}</div>
-                        <a href="https://wa.me/${o.phone}" target="_blank" class="inline-flex items-center mt-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-                            <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> WhatsApp Customer
-                        </a>
-                    </td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${o.items}</td>
-                    <td class="py-4 px-6 font-bold text-white">${o.total}</td>
-                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(o.status)}">${o.status}</span></td>
-                    <td class="py-4 px-6 text-right space-x-2">${actionBtn}</td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        function getStatusBadge(status) {
-            if (status === 'Delivered') return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-            if (status === 'Ready for Pickup' || status === 'In Transit') return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
-            if (status === 'Preparing') return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-            return 'bg-slate-800 text-slate-400 border border-slate-700';
-        }
-
-        // RBAC Restricted Backend Actions
-        function advanceOrderStatus(id) {
-            if (currentRole !== 'admin') {
-                showToast('Access Denied: Only the System Administrative / Core Team HQ account can advance order status.', 'error');
-                return;
+            // Highlight nav button
+            const navBtn = document.getElementById(`nav-btn-${tabId}`);
+            if (navBtn) {
+                navBtn.classList.remove('text-slate-400', 'hover:bg-slate-900');
+                navBtn.classList.add('bg-brand-500/10', 'text-brand-400', 'border', 'border-brand-500/20');
             }
-            const order = ordersData.find(o => o.id === id);
-            if (order) {
-                if (order.status === 'Pending') order.status = 'Preparing';
-                else if (order.status === 'Preparing') order.status = 'Ready for Pickup';
-                else if (order.status === 'Ready for Pickup') order.status = 'In Transit';
-                else order.status = 'Delivered';
-                renderAllTables();
-                showToast(`Order ${id} status updated to: ${order.status}`, 'success');
-            }
-        }
 
-        function handleSyncTeam() {
-            if (currentRole !== 'admin') {
-                showToast('Access Denied: Only the System Administrative account can synchronize team statuses.', 'error');
-                return;
-            }
-            showToast('Team progress report updated and synchronized.', 'success');
-        }
-
-        function handleAddSurplus() {
-            if (currentRole !== 'admin') {
-                showToast('Access Denied: Only the System Administrative account can add and broadcast surplus batches.', 'error');
-                return;
-            }
-            showToast('New surplus batch broadcasted to student app.', 'success');
-        }
-
-        function filterOrders() {
-            const query = document.getElementById('order-search').value.toLowerCase();
-            const rows = document.querySelectorAll('#full-orders-table tr');
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        }
-
-        function renderInventory() {
-            const tbody = document.getElementById('inventory-table');
-            if (!tbody) return;
-            tbody.innerHTML = inventoryData.map(i => `
-                <tr class="hover:bg-slate-900/50 transition-colors">
-                    <td class="py-4 px-6 font-extrabold text-white">${i.name}</td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${i.category}</td>
-                    <td class="py-4 px-6 font-bold text-white">${i.stock}</td>
-                    <td class="py-4 px-6 text-slate-400 line-through text-xs">${i.standardPrice}</td>
-                    <td class="py-4 px-6 font-extrabold text-brand-400">${i.bajetPrice}</td>
-                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">${i.status}</span></td>
-                </tr>
-            `).join('');
-        }
-
-        function renderPayments() {
-            const tbody = document.getElementById('payments-table');
-            if (!tbody) return;
-            tbody.innerHTML = paymentsData.map(p => `
-                <tr class="hover:bg-slate-900/50 transition-colors">
-                    <td class="py-4 px-6 font-extrabold text-white">${p.id}</td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${p.date}</td>
-                    <td class="py-4 px-6 text-slate-300 font-medium">${p.order}</td>
-                    <td class="py-4 px-6 font-black text-white">${p.amount}</td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${p.gateway}</td>
-                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${p.status}</span></td>
-                </tr>
-            `).join('');
-        }
-
-        function renderAdminCheckIns() {
-            const tbody = document.getElementById('admin-checkin-table');
-            if (!tbody) return;
-            tbody.innerHTML = adminCheckIns.map(a => `
-                <tr class="hover:bg-slate-900/50 transition-colors">
-                    <td class="py-3 px-4 font-extrabold text-white">${a.admin}</td>
-                    <td class="py-3 px-4 text-slate-300">${a.station}</td>
-                    <td class="py-3 px-4 text-slate-400 text-xs font-mono">${a.device}</td>
-                    <td class="py-3 px-4 text-slate-400 text-xs">${a.time}</td>
-                </tr>
-            `).join('');
-        }
-
-        function handleAdminCheckIn(e) {
-            e.preventDefault();
-            // RBAC Restricted Action
-            if (currentRole !== 'admin') {
-                showToast('Access Denied: The Security Check-In portal is strictly restricted to Core Team HQ members.', 'error');
-                return;
-            }
-            const memberName = document.getElementById('admin-member-name').value;
-            const pin = document.getElementById('admin-pin').value;
-            const station = document.getElementById('admin-station').value;
-            
-            if (pin.length < 4) {
-                showToast('Please enter a valid 6-digit security PIN.', 'error');
-                return;
+            // Update header title based on active nav item
+            const navItem = currentUser.nav.find(item => item.id === tabId);
+            if(navItem) {
+                document.getElementById('page-title').textContent = navItem.label;
             }
             
-            adminCheckIns.unshift({
-                admin: memberName,
-                station: station,
-                device: '192.168.1.109 (Secure 5G Node)',
-                time: 'Just now'
-            });
-            
-            renderAdminCheckIns();
-            showToast(`${memberName} shift check-in successfully cryptographically signed!`, 'success');
-            document.getElementById('admin-pin').value = '';
-        }
-
-        function renderDriverTasks() {
-            const tbody = document.getElementById('driver-tasks-table');
-            if (!tbody) return;
-            tbody.innerHTML = driverTasks.map(t => `
-                <tr class="hover:bg-slate-900/50 transition-colors">
-                    <td class="py-4 px-6 font-extrabold text-white">${t.id}</td>
-                    <td class="py-4 px-6 text-slate-300 font-medium">${t.destination}</td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${t.items}</td>
-                    <td class="py-4 px-6 text-slate-400 text-xs">${t.contact}</td>
-                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(t.status)}">${t.status}</span></td>
-                    <td class="py-4 px-6 text-right">
-                        <button onclick="updateDriverTask('${t.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Mark Delivered</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function renderDriverEarnings() {
-            const tbody = document.getElementById('driver-earnings-table');
-            if (!tbody) return;
-            tbody.innerHTML = driverEarnings.map(e => `
-                <tr class="hover:bg-slate-900/50 transition-colors">
-                    <td class="py-4 px-6 font-extrabold text-white">${e.date}</td>
-                    <td class="py-4 px-6 text-slate-300">${e.deliveries}</td>
-                    <td class="py-4 px-6 font-black text-white">${e.commission}</td>
-                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${e.status}</span></td>
-                </tr>
-            `).join('');
-        }
-
-        function updateDriverTask(id) {
-            const task = driverTasks.find(t => t.id === id);
-            if (task) {
-                task.status = 'Delivered';
-                renderDriverTasks();
-                showToast(`Delivery task ${id} successfully marked as Delivered!`, 'success');
+            if(window.innerWidth < 1024) {
+                document.querySelector('aside').classList.add('hidden');
             }
         }
 
         function toggleMobileSidebar() {
             const sidebar = document.querySelector('aside');
             sidebar.classList.toggle('hidden');
-            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('absolute');
             sidebar.classList.toggle('inset-y-0');
             sidebar.classList.toggle('left-0');
-            sidebar.classList.toggle('z-50');
+            sidebar.classList.toggle('h-full');
+            sidebar.classList.toggle('shadow-2xl');
+        }
+
+        function renderTables() {
+            // Inventory Table
+            const invTable = document.getElementById('inventory-table');
+            if(invTable) {
+                invTable.innerHTML = dummyData.inventory.map(item => `
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-4 px-6">
+                            <div class="font-bold text-white">${item.name}</div>
+                            <div class="text-[10px] text-slate-500">${item.id}</div>
+                        </td>
+                        <td class="py-4 px-6 text-slate-300">${item.category}</td>
+                        <td class="py-4 px-6">
+                            <span class="font-bold ${item.stock > 10 ? 'text-emerald-400' : (item.stock > 0 ? 'text-amber-400' : 'text-rose-400')}">${item.stock} Units</span>
+                        </td>
+                        <td class="py-4 px-6 text-slate-300">RM ${item.stdPrice.toFixed(2)}</td>
+                        <td class="py-4 px-6 text-brand-400 font-bold">RM ${item.surpPrice.toFixed(2)}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${item.stock > 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} border">${item.status}</span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Orders Tables
+            const renderOrderRows = (orders) => orders.map(order => `
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                    <td class="py-4 px-6 font-bold text-white">${order.id}</td>
+                    <td class="py-4 px-6 text-slate-300">${order.customer}</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${order.items}</td>
+                    <td class="py-4 px-6 text-emerald-400 font-bold">RM ${order.total.toFixed(2)}</td>
+                    <td class="py-4 px-6">
+                         <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">${order.status}</span>
+                    </td>
+                    <td class="py-4 px-6 text-right">
+                        <button onclick="updateOrderStatus('${order.id}')" class="text-xs font-bold text-brand-400 hover:text-brand-300">Update <i class="fa-solid fa-chevron-right ml-1"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            const recentOrdersTable = document.getElementById('recent-orders-table');
+            if(recentOrdersTable) recentOrdersTable.innerHTML = renderOrderRows(dummyData.orders.slice(0,3));
+            
+            const fullOrdersTable = document.getElementById('full-orders-table');
+            if(fullOrdersTable) fullOrdersTable.innerHTML = renderOrderRows(dummyData.orders);
+
+            // Payments Table
+            const payTable = document.getElementById('payments-table');
+            if(payTable) {
+                payTable.innerHTML = dummyData.payments.map(pay => `
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-4 px-6 font-bold text-slate-300">${pay.id}</td>
+                        <td class="py-4 px-6 text-slate-400 text-xs">${pay.date}</td>
+                        <td class="py-4 px-6 text-brand-400 font-medium">${pay.ref}</td>
+                        <td class="py-4 px-6 text-emerald-400 font-bold">RM ${pay.amount.toFixed(2)}</td>
+                        <td class="py-4 px-6 text-slate-300">${pay.method}</td>
+                        <td class="py-4 px-6">
+                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i class="fa-solid fa-check mr-1"></i> ${pay.status}</span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Driver Specific Tables
+            if (currentRole === 'driver') {
+                const driverTasksTable = document.getElementById('driver-tasks-table');
+                if (driverTasksTable) {
+                    driverTasksTable.innerHTML = dummyData.driverTasks.map(task => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="py-4 px-6 font-bold text-brand-400">${task.id}</td>
+                            <td class="py-4 px-6 font-bold text-white">${task.dest}</td>
+                            <td class="py-4 px-6 text-slate-400 text-xs">${task.items}</td>
+                            <td class="py-4 px-6 text-slate-300">${task.contact}</td>
+                            <td class="py-4 px-6">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${task.status.includes('En Route') ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'} border">${task.status}</span>
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <button onclick="completeDriverTask('${task.id}')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-colors">Update</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                const driverEarnTable = document.getElementById('driver-earnings-table');
+                if (driverEarnTable) {
+                    driverEarnTable.innerHTML = dummyData.driverEarnings.map(earn => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="py-4 px-6 font-bold text-slate-300">${earn.date}</td>
+                            <td class="py-4 px-6 text-slate-300">${earn.trips} Drops</td>
+                            <td class="py-4 px-6 text-emerald-400 font-bold">RM ${earn.commission.toFixed(2)}</td>
+                            <td class="py-4 px-6">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${earn.status.includes('Pending') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'} border">${earn.status}</span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            }
+            
+            renderAdminCheckins();
+        }
+        
+        function renderAdminCheckins() {
+             const checkinTable = document.getElementById('admin-checkin-table');
+             if(checkinTable) {
+                 checkinTable.innerHTML = dummyData.adminCheckins.map(ci => `
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4 font-bold text-white">${ci.member}</td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">${ci.station}</td>
+                        <td class="py-3 px-4 text-slate-400 text-[10px] font-mono">${ci.ip}</td>
+                        <td class="py-3 px-4 text-slate-400 text-xs">${ci.time}</td>
+                    </tr>
+                `).join('');
+             }
+        }
+
+        function handleAdminCheckIn(e) {
+            e.preventDefault();
+            const member = document.getElementById('admin-member-name').value;
+            const pin = document.getElementById('admin-pin').value;
+            const station = document.getElementById('admin-station').value;
+            
+            if(pin.length < 4) {
+                 showToast('Invalid Security PIN. Access denied.', 'error');
+                 return;
+            }
+
+            const now = new Date();
+            const timeStr = `${now.getDate()} Sep ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            
+            dummyData.adminCheckins.unshift({
+                member: member,
+                station: station,
+                ip: 'Dynamic-IP (Local Host)',
+                time: timeStr
+            });
+            
+            renderAdminCheckins();
+            document.getElementById('admin-pin').value = '';
+            showToast(`Cryptographic sign-in successful for ${member}.`, 'success');
+        }
+
+        function handleSyncTeam() {
+            const btn = document.getElementById('btn-sync-team');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Syncing...';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check mr-1.5"></i> Synced to DB';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-sync mr-1.5"></i> Sync Team Status';
+                }, 2000);
+                showToast('Team status and roles synchronized with central database.', 'success');
+            }, 1500);
+        }
+
+        function openAddSurplusModal() {
+            // Populate select box
+            const select = document.getElementById('surplus-item-select');
+            select.innerHTML = '<option value="">Choose standard menu item...</option>';
+            dummyData.inventory.forEach(item => {
+                select.innerHTML += `<option value="${item.id}" data-price="${item.stdPrice}">${item.name}</option>`;
+            });
+            
+            // Event listener for price auto-fill
+            select.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if(selectedOption.value) {
+                    const price = parseFloat(selectedOption.dataset.price);
+                    document.getElementById('surplus-standard-price').value = price.toFixed(2);
+                    // Recommend 50% off
+                    document.getElementById('surplus-bajet-price').value = (price * 0.5).toFixed(2);
+                } else {
+                    document.getElementById('surplus-standard-price').value = '';
+                    document.getElementById('surplus-bajet-price').value = '';
+                }
+            });
+
+            document.getElementById('modal-surplus').classList.remove('hidden');
+        }
+
+        function closeAddSurplusModal() {
+            document.getElementById('modal-surplus').classList.add('hidden');
+            document.getElementById('surplus-form').reset();
+        }
+
+        function handleSurplusSubmit(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('surplus-item-select').value;
+            const quantity = parseInt(document.getElementById('surplus-quantity').value);
+            const bajetPrice = parseFloat(document.getElementById('surplus-bajet-price').value);
+
+            if(!itemId || isNaN(quantity) || isNaN(bajetPrice)) {
+                showToast('Please fill all fields correctly.', 'error');
+                return;
+            }
+
+            // Find the item in inventory
+            const itemIndex = dummyData.inventory.findIndex(i => i.id === itemId);
+            if(itemIndex > -1) {
+                // Update existing item
+                dummyData.inventory[itemIndex].stock += quantity;
+                dummyData.inventory[itemIndex].surpPrice = bajetPrice;
+                dummyData.inventory[itemIndex].status = 'Active Listing';
+                
+                showToast(`Successfully added ${quantity} surplus units to ${dummyData.inventory[itemIndex].name}.`, 'success');
+                
+                // Re-render table
+                renderTables();
+                closeAddSurplusModal();
+            } else {
+                showToast('Item not found in inventory.', 'error');
+            }
+        }
+
+
+        function updateOrderStatus(id) {
+            showToast(`Status update request sent to central server for Order ${id}.`, 'info');
+        }
+
+        function filterOrders() {
+            const query = document.getElementById('order-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#full-orders-table tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+        
+        function completeDriverTask(id) {
+            showToast(`Telemetry update: Job ${id} marked for status change.`, 'success');
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('salesChart');
+            if(!ctx) return;
+            
+            // destroy existing chart if it exists
+            if(window.mySalesChart) {
+                window.mySalesChart.destroy();
+            }
+
+            window.mySalesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'],
+                    datasets: [{
+                        label: 'Gross Sales Volume (RM)',
+                        data: [150, 320, 850, 640, 420, 780, 520],
+                        borderColor: '#e14d8f',
+                        backgroundColor: 'rgba(225, 77, 143, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#e14d8f',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#cbd5e1',
+                            bodyColor: '#fff',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'RM ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(51, 65, 85, 0.5)', drawBorder: false },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        },
+                        x: { 
+                            grid: { display: false, drawBorder: false },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                }
+            });
+        }
+
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                document.getElementById('system-time').innerHTML = `Labu Node Live (5G) • ${timeStr}`;
+            }, 1000);
         }
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
-            let bgClass = 'bg-slate-900 border-slate-700 text-white';
-            let icon = 'fa-circle-info text-blue-400';
+            let icon = 'fa-circle-info';
+            let colorClasses = 'bg-slate-800 border-slate-700 text-white';
+            
             if (type === 'success') {
-                bgClass = 'bg-slate-900 border-emerald-500/30 text-white';
-                icon = 'fa-circle-check text-brand-400';
+                icon = 'fa-circle-check';
+                colorClasses = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
             } else if (type === 'error') {
-                bgClass = 'bg-slate-900 border-rose-500/30 text-white';
-                icon = 'fa-circle-exclamation text-rose-400';
+                icon = 'fa-circle-xmark';
+                colorClasses = 'bg-rose-500/10 border-rose-500/30 text-rose-400';
             }
 
-            toast.className = `flex items-center space-x-3 px-5 py-4 rounded-2xl border shadow-2xl backdrop-blur-xl animate-fade-in pointer-events-auto ${bgClass}`;
+            toast.className = `px-4 py-3 rounded-2xl border backdrop-blur-md shadow-xl flex items-center space-x-3 transform transition-all duration-300 translate-y-full opacity-0 ${colorClasses} pointer-events-auto`;
             toast.innerHTML = `
-                <i class="fa-solid ${icon} text-base"></i>
-                <span class="text-xs font-bold">${message}</span>
+                <i class="fa-solid ${icon} text-lg"></i>
+                <p class="text-xs font-bold">${message}</p>
             `;
-
+            
             container.appendChild(toast);
+            
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-full', 'opacity-0');
+            });
+            
+            // Remove after 3s
             setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(8px)';
-                toast.style.transition = 'all 0.3s ease';
+                toast.classList.add('translate-y-full', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
-            }, 3500);
+            }, 3000);
         }
-
-        // Clock updater
-        setInterval(() => {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const timeEl = document.getElementById('system-time');
-            if (timeEl) timeEl.innerText = `Labu Hub Live • ${timeString}`;
-        }, 1000);
     </script>
 </body>
 </html>
