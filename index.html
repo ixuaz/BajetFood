@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BajetFood - Multi-Vendor Food Ordering & Delivery Management System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fdf2f7',
+                            100: '#fae6ef',
+                            200: '#f4bfd7',
+                            300: '#ed99bf',
+                            400: '#e14d8f',
+                            500: '#c11467',
+                            600: '#9d0759',
+                            700: '#820448',
+                            800: '#6a033a',
+                            900: '#580432',
+                            950: '#36011c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- AUTHENTICATION VIEW -->
+    <div id="view-auth" class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-brand-950">
+        <!-- Background decorative glowing gradients -->
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-700/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-md w-full bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl p-8 relative z-10 animate-fade-in">
+            <!-- Brand Logo Header -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white shadow-xl shadow-brand-500/20 text-2xl mb-4 font-extrabold tracking-tight">
+                    BF
+                </div>
+                <h1 class="text-2xl font-extrabold text-white tracking-tight">BajetFood Portal</h1>
+                <p class="text-xs text-slate-400 mt-1 font-medium">Multi-Vendor Food Ordering & Fleet Management System</p>
+            </div>
+
+            <!-- Login Form -->
+            <form onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Select Access Role</label>
+                    <div class="relative">
+                        <select id="login-role" onchange="updateDefaultEmail()" class="w-full px-4 py-3 bg-slate-800/80 border border-slate-700/80 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all appearance-none cursor-pointer">
+                            <option value="admin">🛡️ System Administrator & Core Team HQ</option>
+                            <option value="vendor">🍽️ Vendor Partner (Verified Kitchen Units)</option>
+                            <option value="driver">🏍️ Delivery Rider (Fleet Unit A)</option>
+                        </select>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Partner Email ID</label>
+                    <input type="email" id="login-email" required value="Najmuddin.bj@bajetfood.my" placeholder="Enter authorized partner email" class="w-full px-4 py-3 bg-slate-800/80 border border-slate-700/80 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all placeholder:text-slate-500">
+                    <p id="email-hint" class="text-[11px] text-slate-500 mt-1">Authorized core team email required.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Secure Access Key / PIN</label>
+                    <input type="password" id="login-password" required value="••••••••" class="w-full px-4 py-3 bg-slate-800/80 border border-slate-700/80 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all placeholder:text-slate-500">
+                </div>
+
+                <button type="submit" class="w-full py-3.5 px-6 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white font-bold rounded-2xl shadow-lg shadow-brand-600/30 transition-all transform active:scale-[0.98] text-sm">
+                    Access Portal Dashboard
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-slate-800/80 text-center">
+                <p class="text-xs text-slate-500 font-medium">Labu Hub & Campus Delivery Infrastructure v3.5</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION CONTAINER -->
+    <div id="app-container" class="hidden min-h-screen flex bg-slate-900 text-slate-100">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-72 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between hidden lg:flex select-none">
+            <div>
+                <!-- Brand Header -->
+                <div class="p-6 border-b border-slate-800/80 flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white flex items-center justify-center font-black text-lg shadow-md shadow-brand-500/20">
+                        BF
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-white text-base tracking-tight">BajetFood</h2>
+                        <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-500/10 text-brand-400 border border-brand-500/20 mt-0.5">Partner Portal</span>
+                    </div>
+                </div>
+
+                <!-- Nav Links -->
+                <nav class="p-4 space-y-1.5" id="sidebar-nav">
+                    <!-- Injected dynamically based on active role -->
+                </nav>
+            </div>
+
+            <!-- User Footer Profile -->
+            <div class="p-4 border-t border-slate-800/80 bg-slate-900/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div id="user-profile-initials" class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 text-brand-200 border border-brand-600/30 flex items-center justify-center font-bold text-xs shadow-inner">
+                            MN
+                        </div>
+                        <div class="overflow-hidden">
+                            <p id="user-profile-name" class="text-xs font-bold text-white truncate max-w-[120px]">Muhammad Najmuddin</p>
+                            <p id="user-profile-subtitle" class="text-[11px] text-brand-400 font-medium truncate max-w-[120px]">Project Manager</p>
+                        </div>
+                    </div>
+                    <button onclick="logout()" title="Sign Out" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-rose-500/10 hover:text-rose-400 text-slate-400 flex items-center justify-center transition-all border border-slate-800">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-900">
+            
+            <!-- TOP NAVBAR HEADER -->
+            <header class="h-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-6 lg:px-8 flex items-center justify-between z-20">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleMobileSidebar()" class="lg:hidden text-slate-400 hover:text-white p-2 rounded-xl bg-slate-900 border border-slate-800">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2 id="page-title" class="text-lg lg:text-xl font-extrabold text-white tracking-tight">Core Team Command Dashboard</h2>
+                        <p class="text-xs text-slate-400 font-medium hidden sm:block">Managing Labu Hub Infrastructure & Operations</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-300">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                        <span id="system-time">Labu Node Live (5G)</span>
+                    </div>
+
+                    <button onclick="showToast('No unread alerts.', 'info')" class="relative w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-brand-500 rounded-full"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- SCROLLABLE CONTENT VIEW AREA -->
+            <main class="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-900 space-y-6">
+                
+                <!-- TAB 1: DASHBOARD -->
+                <div id="tab-dashboard" class="tab-pane space-y-6 animate-fade-in">
+                    <!-- Stat Metrics Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-brand-500/50 transition-all">
+                            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-brand-500/5 rounded-full blur-xl group-hover:bg-brand-500/10 transition-all"></div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Revenue</span>
+                                <div class="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-wallet text-sm"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-black text-white tracking-tight">RM 1,482.50</h3>
+                            <p class="text-xs font-semibold text-brand-400 mt-2 flex items-center">
+                                <i class="fa-solid fa-arrow-trend-up mr-1.5"></i> +14.2% vs yesterday
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-blue-500/50 transition-all">
+                            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Completed Orders</span>
+                                <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-receipt text-sm"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-black text-white tracking-tight">64 Orders</h3>
+                            <p class="text-xs font-semibold text-blue-400 mt-2 flex items-center">
+                                <i class="fa-solid fa-circle-check mr-1.5"></i> 100% fulfillment rate
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-amber-500/50 transition-all">
+                            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition-all"></div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Active Deliveries</span>
+                                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-truck-fast text-sm"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-black text-white tracking-tight">12 Active</h3>
+                            <p class="text-xs font-semibold text-amber-400 mt-2 flex items-center">
+                                <i class="fa-solid fa-clock mr-1.5"></i> Avg 18m delivery time
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl relative overflow-hidden group hover:border-purple-500/50 transition-all">
+                            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-500/5 rounded-full blur-xl group-hover:bg-purple-500/10 transition-all"></div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Waste Reduction</span>
+                                <div class="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-recycle text-sm"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-black text-white tracking-tight">96.8% Saved</h3>
+                            <p class="text-xs font-semibold text-purple-400 mt-2 flex items-center">
+                                <i class="fa-solid fa-shield-heart mr-1.5"></i> Zero surplus loss
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Core Team Hub Card -->
+                    <div class="bg-gradient-to-br from-slate-950 via-slate-900 to-brand-950/50 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+                        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-brand-500/10 text-brand-400 border border-brand-500/20">Core Team Command</span>
+                                <h3 class="text-xl font-extrabold text-white mt-2">Meet the BajetFood Project Leadership</h3>
+                                <p class="text-xs text-slate-400 mt-1">Driving multi-vendor food security and campus delivery innovation in Labu.</p>
+                            </div>
+                            <button onclick="switchTab('team')" class="px-5 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-2xl shadow-lg shadow-brand-600/30 transition-all whitespace-nowrap">
+                                View Team Assignments <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-800/80">
+                            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+                                <p class="text-[10px] font-bold text-brand-400 uppercase tracking-wider">Project Manager</p>
+                                <h4 class="text-xs font-extrabold text-white mt-1">Muhammad Najmuddin</h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Timeline & Milestone Oversight</p>
+                            </div>
+                            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+                                <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Business Analyst / Doc</p>
+                                <h4 class="text-xs font-extrabold text-white mt-1">Adibah Afina</h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">System Specs & Documentation</p>
+                            </div>
+                            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+                                <p class="text-[10px] font-bold text-purple-400 uppercase tracking-wider">Tech Lead & QA / Mkt</p>
+                                <h4 class="text-xs font-extrabold text-white mt-1">Norafnizaini</h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Development & Quality Control</p>
+                            </div>
+                            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+                                <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Project Planner</p>
+                                <h4 class="text-xs font-extrabold text-white mt-1">Vivian</h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Strategy & Workflow Scheduling</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart & Quick Feed Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Chart Card -->
+                        <div class="lg:col-span-2 bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h4 class="text-base font-extrabold text-white tracking-tight">Hourly Sales & Order Velocity</h4>
+                                    <p class="text-xs text-slate-400 font-medium">Real-time campus demand surge in Labu hub</p>
+                                </div>
+                                <span class="text-xs font-bold px-3 py-1.5 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20">Live Sync</span>
+                            </div>
+                            <div class="h-72 w-full">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Quick Action Hub -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex flex-col justify-between space-y-6">
+                            <div>
+                                <h4 class="text-base font-extrabold text-white tracking-tight">Quick Operations</h4>
+                                <p class="text-xs text-slate-400 font-medium mt-0.5">Instant kitchen & dispatch triggers</p>
+                            </div>
+                            <div class="space-y-3">
+                                <button onclick="switchTab('orders')" class="w-full flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl text-xs font-bold text-white transition-all group">
+                                    <span class="flex items-center">
+                                        <i class="fa-solid fa-receipt text-brand-400 mr-3 text-base"></i> Review Pending Orders
+                                    </span>
+                                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:translate-x-1 transition-transform"></i>
+                                </button>
+                                <button onclick="switchTab('inventory')" class="w-full flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl text-xs font-bold text-white transition-all group">
+                                    <span class="flex items-center">
+                                        <i class="fa-solid fa-boxes-stacked text-blue-400 mr-3 text-base"></i> Update Menu Stock
+                                    </span>
+                                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:translate-x-1 transition-transform"></i>
+                                </button>
+                                <button onclick="switchTab('deliveries')" class="w-full flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl text-xs font-bold text-white transition-all group">
+                                    <span class="flex items-center">
+                                        <i class="fa-solid fa-truck-fast text-amber-400 mr-3 text-base"></i> Dispatch Fleet Riders
+                                    </span>
+                                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:translate-x-1 transition-transform"></i>
+                                </button>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-300 text-xs font-medium">
+                                <i class="fa-solid fa-circle-info mr-1.5"></i> All vendor nodes synchronized with UiTM Kolej Melati Hub.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders Table Preview -->
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+                        <div class="p-6 lg:p-8 border-b border-slate-800/80 flex items-center justify-between">
+                            <div>
+                                <h4 class="text-base font-extrabold text-white tracking-tight">Recent Live Orders</h4>
+                                <p class="text-xs text-slate-400 font-medium">Real-time incoming customer transactions</p>
+                            </div>
+                            <button onclick="switchTab('orders')" class="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors">
+                                View All Orders <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                                        <th class="py-4 px-6">Order ID</th>
+                                        <th class="py-4 px-6">Customer Name</th>
+                                        <th class="py-4 px-6">Items Ordered</th>
+                                        <th class="py-4 px-6">Total Amount</th>
+                                        <th class="py-4 px-6">Status</th>
+                                        <th class="py-4 px-6 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-orders-table" class="divide-y divide-slate-800/60 text-sm">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: CORE TEAM COLLABORATION -->
+                <div id="tab-team" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">BajetFood Core Team Management & Action Plan</h3>
+                            <p class="text-xs text-slate-400 font-medium">Assigned responsibilities, deliverables, and quality assurance workflows</p>
+                        </div>
+                        <button onclick="showToast('Team progress report updated and synchronized.', 'success')" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
+                            <i class="fa-solid fa-sync mr-1.5"></i> Sync Team Status
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Najmuddin -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-brand-500/10 text-brand-400 border border-brand-500/20">Project Manager</span>
+                                <span class="text-xs text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Active Lead</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-extrabold text-white">Muhammad Najmuddin</h4>
+                                <p class="text-xs text-slate-400 mt-1">Responsible for overall project timeline execution, stakeholder communication, sprint planning, and risk management.</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+                                <p class="text-[11px] font-bold text-slate-300">Key Focus Areas:</p>
+                                <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                                    <li>Milestone tracking & milestone delivery</li>
+                                    <li>Labu vendor onboarding coordination</li>
+                                    <li>Resource allocation across rider fleet</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Adibah Afina -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">Business Analyst / Documentation Officer</span>
+                                <span class="text-xs text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Active Lead</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-extrabold text-white">Adibah Afina</h4>
+                                <p class="text-xs text-slate-400 mt-1">Responsible for requirements gathering, user stories, functional specifications, and comprehensive project documentation.</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+                                <p class="text-[11px] font-bold text-slate-300">Key Focus Areas:</p>
+                                <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                                    <li>SRS documentation & user flow mapping</li>
+                                    <li>Business logic validation for surplus meals</li>
+                                    <li>Financial ledger & payment reconciliation specs</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Norafnizaini -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">System Developer / Tech Lead / QA & Marketing</span>
+                                <span class="text-xs text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Active Lead</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-extrabold text-white">Norafnizaini</h4>
+                                <p class="text-xs text-slate-400 mt-1">Responsible for core system architecture, code development, quality assurance testing, and marketing campaign coordination.</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+                                <p class="text-[11px] font-bold text-slate-300">Key Focus Areas:</p>
+                                <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                                    <li>Single-file architecture & UI/UX responsiveness</li>
+                                    <li>Quality assurance (QA) bug testing & validation</li>
+                                    <li>Marketing outreach to campus students & vendors</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Vivian -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Project Planner</span>
+                                <span class="text-xs text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Active Lead</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-extrabold text-white">Vivian</h4>
+                                <p class="text-xs text-slate-400 mt-1">Responsible for strategic scheduling, roadmap design, task dependencies, and operational workflow optimization.</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+                                <p class="text-[11px] font-bold text-slate-300">Key Focus Areas:</p>
+                                <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                                    <li>Gantt roadmap and phase scheduling</li>
+                                    <li>Workflow optimization between kitchen and rider dispatch</li>
+                                    <li>Logistics planning for campus distribution points</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: MANAGE ORDERS -->
+                <div id="tab-orders" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Comprehensive Order Management</h3>
+                            <p class="text-xs text-slate-400 font-medium">Accept, prep, and hand over orders to delivery riders</p>
+                        </div>
+                        <div class="flex items-center space-x-3 w-full sm:w-auto">
+                            <input type="text" id="order-search" oninput="filterOrders()" placeholder="Search Order ID or Customer..." class="px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-brand-500 w-full sm:w-64">
+                            <button onclick="showToast('Orders list refreshed.', 'success')" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold rounded-xl text-slate-300 whitespace-nowrap">
+                                <i class="fa-solid fa-rotate mr-1.5"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                                        <th class="py-4 px-6">Order ID</th>
+                                        <th class="py-4 px-6">Customer / Location</th>
+                                        <th class="py-4 px-6">Items Summary</th>
+                                        <th class="py-4 px-6">Total (RM)</th>
+                                        <th class="py-4 px-6">Status</th>
+                                        <th class="py-4 px-6 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="full-orders-table" class="divide-y divide-slate-800/60 text-sm">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: DELIVERIES -->
+                <div id="tab-deliveries" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Real-Time Fleet & Dispatch Control</h3>
+                            <p class="text-xs text-slate-400 font-medium">Live GPS tracking of active delivery riders across Labu & campus zones</p>
+                        </div>
+                        <span class="px-3 py-1.5 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 text-xs font-bold">
+                            <i class="fa-solid fa-satellite-dish mr-1.5"></i> Fleet Unit A Online
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4">
+                            <h4 class="font-extrabold text-white text-sm">Active Riders On Duty</h4>
+                            <div class="space-y-3">
+                                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold">
+                                            AR
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center space-x-2">
+                                                <p class="text-xs font-bold text-white">Azman Rider</p>
+                                                <a href="https://wa.me/601122334455" target="_blank" title="WhatsApp Azman" class="text-emerald-400 hover:text-emerald-300 transition-colors">
+                                                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                                                </a>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400">Yamaha LC135 • 3 active drops</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-brand-500/10 text-brand-400 border border-brand-500/20">En Route</span>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold">
+                                            MK
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center space-x-2">
+                                                <p class="text-xs font-bold text-white">Muthu Kumar</p>
+                                                <a href="https://wa.me/60199887766" target="_blank" title="WhatsApp Muthu" class="text-emerald-400 hover:text-emerald-300 transition-colors">
+                                                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                                                </a>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400">Honda EX5 • Returning to Hub</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">Standby</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex flex-col justify-between min-h-[340px] relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#22c55e 1.5px, transparent 1.5px); background-size: 24px 24px;"></div>
+                            <div class="flex items-center justify-between relative z-10">
+                                <div>
+                                    <h4 class="font-extrabold text-white text-sm">Labu Central Hub GPS Grid</h4>
+                                    <p class="text-xs text-slate-400">Live coordinates: 2.6841° N, 101.9312° E</p>
+                                </div>
+                                <button onclick="showToast('GPS telemetry successfully re-centered.', 'success')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 rounded-xl">
+                                    Recenter Map
+                                </button>
+                            </div>
+                            <div class="text-center my-8 relative z-10">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-brand-500/10 text-brand-400 border border-brand-500/30 text-3xl shadow-2xl animate-bounce">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </div>
+                                <p class="text-sm font-bold text-white mt-3">UiTM Kolej Melati & Hospital Seremban Route Active</p>
+                                <p class="text-xs text-slate-400 mt-1">Estimated delivery window: 12-15 minutes</p>
+                            </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-xs text-slate-400 relative z-10 font-medium">
+                                <span>Signal Strength: 5G Secure</span>
+                                <span class="text-brand-400 font-bold">All deliveries on schedule</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: INVENTORY -->
+                <div id="tab-inventory" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Inventory & Waste Reduction Management</h3>
+                            <p class="text-xs text-slate-400 font-medium">Monitor daily ingredient batches, surplus meals, and dynamic pricing</p>
+                        </div>
+                        <button onclick="showToast('New surplus batch broadcasted to student app.', 'success')" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
+                            <i class="fa-solid fa-plus mr-1.5"></i> Add Surplus Batch
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                                        <th class="py-4 px-6">Menu Item Name</th>
+                                        <th class="py-4 px-6">Category</th>
+                                        <th class="py-4 px-6">Current Stock</th>
+                                        <th class="py-4 px-6">Standard Price</th>
+                                        <th class="py-4 px-6">Surplus Bajet Price</th>
+                                        <th class="py-4 px-6">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-table" class="divide-y divide-slate-800/60 text-sm">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: PAYMENTS -->
+                <div id="tab-payments" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Payment Records & Financial Ledgers</h3>
+                            <p class="text-xs text-slate-400 font-medium">Secure automated settlements and vendor payouts</p>
+                        </div>
+                        <span class="px-3 py-1.5 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 text-xs font-bold">
+                            <i class="fa-solid fa-shield-check mr-1.5"></i> Bank Verified
+                        </span>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                                        <th class="py-4 px-6">Transaction ID</th>
+                                        <th class="py-4 px-6">Date & Time</th>
+                                        <th class="py-4 px-6">Order Reference</th>
+                                        <th class="py-4 px-6">Amount Received</th>
+                                        <th class="py-4 px-6">Payment Gateway</th>
+                                        <th class="py-4 px-6">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="payments-table" class="divide-y divide-slate-800/60 text-sm">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: REPORTS -->
+                <div id="tab-reports" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Reports & System Analytics</h3>
+                            <p class="text-xs text-slate-400 font-medium">Export monthly financial sheets, waste audit logs, and rider performance</p>
+                        </div>
+                        <button onclick="showToast('PDF audit report generated and downloaded.', 'success')" class="px-5 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold rounded-2xl text-white">
+                            <i class="fa-solid fa-file-pdf mr-1.5 text-rose-400"></i> Export PDF Report
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-3">
+                            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-chart-pie"></i>
+                            </div>
+                            <h4 class="font-extrabold text-white text-base">Monthly Sales Summary</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">Detailed breakdown of total gross sales, commission deductions, and net vendor payout.</p>
+                            <button onclick="showToast('Sales summary downloaded.', 'success')" class="text-xs font-bold text-brand-400 hover:text-brand-300 pt-2 inline-block">Download CSV <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                        </div>
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-3">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-recycle"></i>
+                            </div>
+                            <h4 class="font-extrabold text-white text-base">Food Waste Audit Log</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">Certified metrics on surplus meals rescued and redistributed to students at affordable bajet pricing.</p>
+                            <button onclick="showToast('Waste audit log downloaded.', 'success')" class="text-xs font-bold text-purple-400 hover:text-purple-300 pt-2 inline-block">Download CSV <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                        </div>
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-3">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-person-biking"></i>
+                            </div>
+                            <h4 class="font-extrabold text-white text-base">Rider Fleet Efficiency</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">Analysis of average delivery duration, fuel allowance claims, and trip completion rates.</p>
+                            <button onclick="showToast('Fleet report downloaded.', 'success')" class="text-xs font-bold text-blue-400 hover:text-blue-300 pt-2 inline-block">Download CSV <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 7: ADMIN CHECK-IN -->
+                <div id="tab-admin-checkin" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Core Team Check-In & Security Audit</h3>
+                            <p class="text-xs text-slate-400 font-medium">Restricted access portal for auditing system health, verifying database handshakes, and signing security check-ins.</p>
+                        </div>
+                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-3 py-1.5 rounded-xl font-bold">
+                            <i class="fa-solid fa-lock text-[10px] mr-1"></i> Core Team Verified
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4">
+                            <h4 class="font-extrabold text-white text-sm">Perform Core Team Shift Check-In</h4>
+                            <p class="text-xs text-slate-400">Record your administrative verification timestamp and cryptographic system sign-off.</p>
+                            <form onsubmit="handleAdminCheckIn(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Team Member Name</label>
+                                    <select id="admin-member-name" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                        <option value="Muhammad Najmuddin (PM)">Muhammad Najmuddin (PM)</option>
+                                        <option value="Adibah Afina (BA / Doc)">Adibah Afina (BA / Doc)</option>
+                                        <option value="Norafnizaini (Tech Lead / QA / Mkt)">Norafnizaini (Tech Lead / QA / Mkt)</option>
+                                        <option value="Vivian (Project Planner)">Vivian (Project Planner)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Security PIN</label>
+                                    <input type="password" id="admin-pin" required placeholder="Enter 6-digit PIN" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Station Node / Hub Location</label>
+                                    <input type="text" id="admin-station" value="Labu HQ Command Center" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <button type="submit" class="w-full py-3.5 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-2xl text-xs transition-all shadow-lg">
+                                    Sign Check-In Record
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex flex-col">
+                            <h4 class="font-extrabold text-white text-sm mb-4">Recent Core Team Check-In Audit Trail</h4>
+                            <div class="overflow-x-auto flex-1">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                                            <th class="py-3 px-4">Team Member</th>
+                                            <th class="py-3 px-4">Station / Hub</th>
+                                            <th class="py-3 px-4">IP / Device Signature</th>
+                                            <th class="py-3 px-4">Timestamp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-checkin-table" class="divide-y divide-slate-800/60 text-sm">
+                                        <!-- Injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 8: DRIVER TASKS -->
+                <div id="tab-driver-tasks" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Assigned Delivery Jobs & Pickup Queue</h3>
+                            <p class="text-xs text-slate-400 font-medium">Accept, pickup, and confirm drop-offs for assigned batch orders</p>
+                        </div>
+                        <span class="bg-brand-500/10 text-brand-400 border border-brand-500/20 text-xs px-3 py-1.5 rounded-xl font-bold">
+                            <i class="fa-solid fa-motorcycle text-xs mr-1.5"></i> Fleet Fleet Online
+                        </span>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                                        <th class="py-4 px-6">Order ID</th>
+                                        <th class="py-4 px-6">Delivery Destination</th>
+                                        <th class="py-4 px-6">Items</th>
+                                        <th class="py-4 px-6">Customer Contact</th>
+                                        <th class="py-4 px-6">Job Status</th>
+                                        <th class="py-4 px-6 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="driver-tasks-table" class="divide-y divide-slate-800/60 text-sm">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 9: DRIVER MAP -->
+                <div id="tab-driver-map" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-6 lg:p-8 rounded-3xl shadow-xl flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Turn-by-Turn Route GPS Navigator</h3>
+                            <p class="text-xs text-slate-400 font-medium">Optimized routing from Central Kitchen Hub to campus delivery points</p>
+                        </div>
+                        <button onclick="showToast('GPS rerouting optimized for traffic clearance.', 'success')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs shadow-md shadow-brand-600/20">
+                            Recalculate Route
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 rounded-3xl p-8 text-white relative overflow-hidden min-h-[420px] flex flex-col justify-between shadow-2xl">
+                        <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: radial-gradient(#22c55e 1.5px, transparent 1.5px); background-size: 24px 24px;"></div>
+                        
+                        <div class="flex items-center justify-between relative z-10">
+                            <div class="bg-slate-900/90 backdrop-blur-md px-5 py-4 rounded-2xl border border-slate-800 shadow-xl">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Next Destination</p>
+                                <h4 class="text-base font-extrabold text-brand-400 mt-0.5">UiTM Kolej Melati (Gate B Canteen)</h4>
+                                <p class="text-xs text-slate-300 mt-1"><i class="fa-solid fa-location-arrow mr-1 text-brand-400"></i> 850m ahead • Turn right in 200m</p>
+                            </div>
+                            <div class="bg-brand-500/10 text-brand-400 border border-brand-500/20 px-4 py-2 rounded-2xl text-xs font-bold animate-pulse">
+                                GPS Signal 5G Connected
+                            </div>
+                        </div>
+
+                        <div class="text-center relative z-10 my-12">
+                            <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/30 text-3xl shadow-2xl">
+                                <i class="fa-solid fa-route animate-bounce"></i>
+                            </div>
+                            <p class="text-base font-bold text-white mt-4">Estimated Arrival Time: 4 mins (1.2 km)</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 relative z-10">
+                            <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Current Speed</span>
+                                <p class="text-xl font-black text-white mt-0.5">38 km/h</p>
+                            </div>
+                            <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Trip Progress</span>
+                                <p class="text-xl font-black text-brand-400 mt-0.5">2 / 3 Stops Complete</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 10: DRIVER EARNINGS -->
+                <div id="tab-driver-earnings" class="tab-pane space-y-6 hidden animate-fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Today's Commission</p>
+                                <h3 class="text-2xl font-black text-white mt-1">RM 40.00</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Trips Completed</p>
+                                <h3 class="text-2xl font-black text-white mt-1">8 Trips</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-check-double"></i>
+                            </div>
+                        </div>
+                        <div class="bg-slate-950/60 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Weekly Payout Status</p>
+                                <h3 class="text-2xl font-black text-brand-400 mt-1">Ready</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
+                        <div class="p-6 lg:p-8 border-b border-slate-800/80 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-base font-extrabold text-white tracking-tight">Trip Earnings Ledgers & Payout History</h3>
+                                <p class="text-xs text-slate-400 font-medium">Detailed records of delivery commission and weekly payouts</p>
+                            </div>
+                            <button onclick="showToast('Payout transfer requested to rider bank account.', 'success')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs shadow-md shadow-brand-600/20">
+                                Withdraw Earnings
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                                        <th class="py-4 px-6">Date / Shift</th>
+                                        <th class="py-4 px-6">Trips Completed</th>
+                                        <th class="py-4 px-6">Commission Earned</th>
+                                        <th class="py-4 px-6">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="driver-earnings-table" class="divide-y divide-slate-800/60 text-sm">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+    <script>
+        let currentRole = 'admin';
+
+        let ordersData = [
+            { id: "BF-1092", customer: "Aisyah (UiTM Kolej Melati)", phone: "60123456789", items: "3x Nasi Lemak Bungkus, 2x Teh Tarik", total: "RM 21.50", status: "Ready for Pickup" },
+            { id: "BF-1093", customer: "Dr. Rina (Hospital Seremban)", phone: "60198765432", items: "2x Mee Goreng Mamak, 1x Mineral Water", total: "RM 16.00", status: "In Transit" },
+            { id: "BF-1094", customer: "Farhan (Fakulti Sains Komputer)", phone: "60181122334", items: "4x Kuih Seri Muka, 2x Neslo Ais", total: "RM 14.80", status: "Delivered" },
+            { id: "BF-1095", customer: "Zulkifli (Labu Police HQ)", phone: "60133334444", items: "5x Nasi Ayam Special", total: "RM 45.00", status: "Preparing" },
+            { id: "BF-1096", customer: "Siti Nurhaliza (Kolej Kediaman Tun Dr Ismail)", phone: "60177778888", items: "2x Roti Canai Banjir", total: "RM 6.50", status: "Pending" }
+        ];
+
+        let inventoryData = [
+            { name: "Nasi Lemak Bungkus Daun Pisang", category: "Mains", stock: "45 packs", standardPrice: "RM 3.50", bajetPrice: "RM 2.00", status: "Surplus Active" },
+            { name: "Mee Goreng Mamak Panas", category: "Noodles", stock: "28 plates", standardPrice: "RM 7.00", bajetPrice: "RM 4.50", status: "Normal Stock" },
+            { name: "Kuih Seri Muka (Box of 4)", category: "Dessert", stock: "12 boxes", standardPrice: "RM 5.00", bajetPrice: "RM 3.00", status: "Low Stock" },
+            { name: "Nasi Ayam Madu Special", category: "Mains", stock: "34 packs", standardPrice: "RM 9.00", bajetPrice: "RM 6.00", status: "Normal Stock" }
+        ];
+
+        let paymentsData = [
+            { id: "TXN-90821", date: "Today, 08:45 AM", order: "BF-1092", amount: "RM 21.50", gateway: "FPX Online Banking", status: "Success" },
+            { id: "TXN-90820", date: "Today, 08:12 AM", order: "BF-1093", amount: "RM 16.00", gateway: "DuitNow QR", status: "Success" },
+            { id: "TXN-90819", date: "Yesterday, 06:30 PM", order: "BF-1088", amount: "RM 38.20", gateway: "Touch 'n Go eWallet", status: "Settled" }
+        ];
+
+        let adminCheckIns = [
+            { admin: "Muhammad Najmuddin (PM)", station: "Labu HQ Command Center", device: "192.168.1.101 (Secure 5G)", time: "Today, 08:00 AM" },
+            { admin: "Adibah Afina (BA / Doc)", station: "Documentation Hub", device: "192.168.1.102 (Secure 5G)", time: "Today, 08:15 AM" },
+            { admin: "Norafnizaini (Tech Lead / QA / Mkt)", station: "Development & QA Server", device: "192.168.1.103 (Secure 5G)", time: "Today, 08:30 AM" },
+            { admin: "Vivian (Project Planner)", station: "Strategy & Planning Office", device: "192.168.1.104 (Secure 5G)", time: "Today, 08:45 AM" }
+        ];
+
+        let driverTasks = [
+            { id: "BF-1092", destination: "UiTM Kolej Melati (Gate B)", items: "3x Nasi Lemak Bungkus", status: "Ready for Pickup", contact: "Aisyah (012-3456789)" },
+            { id: "BF-1095", destination: "Hospital Seremban Canteen", items: "2x Mee Goreng Mamak", status: "In Transit", contact: "Dr. Rina (019-8765432)" },
+            { id: "BF-1097", destination: "Fakulti Sains Komputer", items: "4x Kuih Seri Muka", status: "Delivered", contact: "Farhan (018-1122334)" }
+        ];
+
+        let driverEarnings = [
+            { date: "Today, Sep 21", deliveries: "8 trips", commission: "RM 40.00", status: "Verified" },
+            { date: "Yesterday, Sep 20", deliveries: "12 trips", commission: "RM 60.00", status: "Paid Out" }
+        ];
+
+        let salesChartInstance = null;
+
+        function updateDefaultEmail() {
+            const role = document.getElementById('login-role').value;
+            const emailInput = document.getElementById('login-email');
+            const emailHint = document.getElementById('email-hint');
+
+            if (role === 'admin') {
+                emailInput.value = 'Najmuddin.bj@bajetfood.my';
+                if (emailHint) emailHint.innerText = 'Authorized core team email required (e.g. Najmuddin.bj@bajetfood.my)';
+            } else if (role === 'vendor') {
+                emailInput.value = 'Aisyah.vp@bajetfood.my';
+                if (emailHint) emailHint.innerText = 'Authorized Vendor Partner email required (e.g. Aisyah.vp@bajetfood.my, Rina.vp@bajetfood.my)';
+            } else if (role === 'driver') {
+                emailInput.value = 'azman.r@bajetfood.my';
+                if (emailHint) emailHint.innerText = 'Authorized delivery rider email required (e.g. azman.r@bajetfood.my)';
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const roleSelect = document.getElementById('login-role');
+            const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+            currentRole = roleSelect.value;
+
+            const profileName = document.getElementById('user-profile-name');
+            const profileSubtitle = document.getElementById('user-profile-subtitle');
+            const profileInitials = document.getElementById('user-profile-initials');
+
+            if (currentRole === 'admin') {
+                // Strict validation for Core Team Emails
+                const adminAccounts = {
+                    'najmuddin.bj@bajetfood.my': { name: 'Muhammad Najmuddin', role: 'Project Manager', init: 'MN' },
+                    'adibah.bj@bajetfood.my': { name: 'Adibah Afina', role: 'Business Analyst / Doc', init: 'AA' },
+                    'norafnizaini.bj@bajetfood.my': { name: 'Norafnizaini', role: 'Tech Lead / QA', init: 'NF' },
+                    'vivian.bj@bajetfood.my': { name: 'Vivian', role: 'Project Planner', init: 'VV' }
+                };
+
+                if (!adminAccounts[emailInput]) {
+                    showToast('Access Denied: Unrecognized core team email address.', 'error');
+                    return; // Halt login process
+                }
+
+                const admin = adminAccounts[emailInput];
+                profileName.innerText = admin.name;
+                profileSubtitle.innerText = admin.role + ' (Core Team)';
+                profileInitials.innerText = admin.init;
+
+            } else if (currentRole === 'vendor') {
+                // Strict validation for Vendor Partner Accounts
+                const vendorAccounts = {
+                    'aisyah.vp@bajetfood.my': { name: 'Aisyah', role: 'Vendor Partner / Kitchen Lead', init: 'AY' },
+                    'rina.vp@bajetfood.my': { name: 'Dr. Rina', role: 'Vendor Partner / Kitchen Lead', init: 'DR' },
+                    'farhan.vp@bajetfood.my': { name: 'Farhan', role: 'Vendor Partner / Kitchen Lead', init: 'FH' },
+                    'zulkifli.vp@bajetfood.my': { name: 'Zulkifli', role: 'Vendor Partner / Kitchen Lead', init: 'ZK' },
+                    'nurhaliza@bajetfood.my': { name: 'Siti Nurhaliza', role: 'Vendor Partner / Kitchen Lead', init: 'SN' },
+                    'nurhaliza.vp@bajetfood.my': { name: 'Siti Nurhaliza', role: 'Vendor Partner / Kitchen Lead', init: 'SN' }
+                };
+
+                if (!vendorAccounts[emailInput]) {
+                    showToast('Access Denied: Unrecognized vendor partner email address.', 'error');
+                    return; // Halt login process
+                }
+
+                const vendor = vendorAccounts[emailInput];
+                profileName.innerText = vendor.name;
+                profileSubtitle.innerText = vendor.role;
+                profileInitials.innerText = vendor.init;
+
+            } else if (currentRole === 'driver') {
+                // Strict validation for Delivery Rider Emails
+                const driverAccounts = {
+                    'azman.r@bajetfood.my': { name: 'Azman Rider', role: 'Fleet Unit A (Labu)', init: 'AR' },
+                    'muthu.r@bajetfood.my': { name: 'Muthu Kumar', role: 'Fleet Unit B (Campus)', init: 'MK' }
+                };
+
+                if (!driverAccounts[emailInput]) {
+                    showToast('Access Denied: Unrecognized delivery rider email address.', 'error');
+                    return; // Halt login process
+                }
+
+                const driver = driverAccounts[emailInput];
+                profileName.innerText = driver.name;
+                profileSubtitle.innerText = driver.role;
+                profileInitials.innerText = driver.init;
+            }
+
+            // Authentication passed, hide auth view and show app
+            document.getElementById('view-auth').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            renderNavigationForRole();
+            
+            if (currentRole === 'vendor') switchTab('dashboard');
+            else if (currentRole === 'driver') switchTab('driver-tasks');
+            else if (currentRole === 'admin') switchTab('dashboard');
+
+            showToast(`Signed in successfully as ${profileName.innerText} (${currentRole.toUpperCase()}).`, 'success');
+
+            initDashboardChart();
+            renderAllTables();
+        }
+
+        function renderNavigationForRole() {
+            const navContainer = document.getElementById('sidebar-nav');
+            let html = '';
+
+            if (currentRole === 'vendor') {
+                html = `
+                    <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="dashboard">
+                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="orders">
+                        <i class="fa-solid fa-receipt w-5 text-sm"></i>
+                        <span>Manage Orders</span>
+                        <span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold">12</span>
+                    </button>
+                    <button onclick="switchTab('deliveries')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="deliveries">
+                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i>
+                        <span>Delivery Tracking</span>
+                    </button>
+                    <button onclick="switchTab('inventory')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="inventory">
+                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i>
+                        <span>Inventory & Waste</span>
+                    </button>
+                    <button onclick="switchTab('payments')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="payments">
+                        <i class="fa-solid fa-wallet w-5 text-sm"></i>
+                        <span>Payment Records</span>
+                    </button>
+                    <button onclick="switchTab('reports')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="reports">
+                        <i class="fa-solid fa-file-lines w-5 text-sm"></i>
+                        <span>Reports & Analytics</span>
+                    </button>
+                `;
+            } else if (currentRole === 'driver') {
+                html = `
+                    <button onclick="switchTab('driver-tasks')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="driver-tasks">
+                        <i class="fa-solid fa-person-biking w-5 text-sm"></i>
+                        <span>Assigned Deliveries</span>
+                        <span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold">3</span>
+                    </button>
+                    <button onclick="switchTab('driver-map')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="driver-map">
+                        <i class="fa-solid fa-map-location-dot w-5 text-sm"></i>
+                        <span>Route GPS Navigator</span>
+                    </button>
+                    <button onclick="switchTab('driver-earnings')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="driver-earnings">
+                        <i class="fa-solid fa-hand-holding-dollar w-5 text-sm"></i>
+                        <span>Trip Earnings & Payouts</span>
+                    </button>
+                `;
+            } else if (currentRole === 'admin') {
+                html = `
+                    <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="dashboard">
+                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i>
+                        <span>System Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('team')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="team">
+                        <i class="fa-solid fa-users-gear w-5 text-sm"></i>
+                        <span>Core Team Roles</span>
+                        <span class="ml-auto bg-brand-500/10 text-brand-400 border border-brand-500/20 text-[10px] px-1.5 py-0.5 rounded font-extrabold">4 MEMBERS</span>
+                    </button>
+                    <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="orders">
+                        <i class="fa-solid fa-receipt w-5 text-sm"></i>
+                        <span>All System Orders</span>
+                    </button>
+                    <button onclick="switchTab('deliveries')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="deliveries">
+                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i>
+                        <span>Fleet Dispatch Control</span>
+                    </button>
+                    <button onclick="switchTab('inventory')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="inventory">
+                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i>
+                        <span>Vendor Inventories</span>
+                    </button>
+                    <button onclick="switchTab('payments')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="payments">
+                        <i class="fa-solid fa-wallet w-5 text-sm"></i>
+                        <span>Financial Ledgers</span>
+                    </button>
+                    <button onclick="switchTab('reports')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="reports">
+                        <i class="fa-solid fa-file-lines w-5 text-sm"></i>
+                        <span>System Reports</span>
+                    </button>
+                    <button onclick="switchTab('admin-checkin')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="admin-checkin">
+                        <i class="fa-solid fa-user-shield w-5 text-sm"></i>
+                        <span>Team Security Check-In</span>
+                        <span class="ml-auto bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] px-1.5 py-0.5 rounded font-extrabold">SECURE</span>
+                    </button>
+                `;
+            }
+            navContainer.innerHTML = html;
+        }
+
+        function logout() {
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('view-auth').classList.remove('hidden');
+            showToast('Signed out securely.', 'info');
+        }
+
+        function switchTab(tabId) {
+            if (currentRole === 'driver' && !tabId.startsWith('driver-')) {
+                showToast('Access Denied: Drivers can only access delivery task & GPS tabs.', 'error');
+                return;
+            }
+            if (currentRole === 'vendor' && tabId.startsWith('driver-')) {
+                showToast('Access Denied: Vendors cannot access driver telemetry tabs.', 'error');
+                return;
+            }
+            if ((tabId === 'admin-checkin' || tabId === 'team') && currentRole !== 'admin') {
+                showToast('Access Denied: Core Team portal is restricted to project leadership accounts only!', 'error');
+                return;
+            }
+
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            const targetTab = document.getElementById('tab-' + tabId);
+            if (targetTab) targetTab.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-brand-600', 'to-brand-800', 'to-emerald-600', 'text-white', 'shadow-lg', 'shadow-brand-900/30');
+                btn.classList.add('hover:bg-slate-900', 'text-slate-400', 'hover:text-white');
+            });
+
+            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-gradient-to-r', 'from-brand-600', 'to-brand-800', 'text-white', 'shadow-lg', 'shadow-brand-900/30');
+                activeBtn.classList.remove('hover:bg-slate-900', 'text-slate-400', 'hover:text-white');
+            }
+
+            const titles = {
+                'dashboard': 'Core Team Command Dashboard',
+                'team': 'BajetFood Core Team Roles & Responsibilities',
+                'orders': 'Manage Food Orders',
+                'deliveries': 'Real-Time Delivery & Dispatch Tracking',
+                'inventory': 'Inventory & Waste Reduction Management',
+                'payments': 'Payment Records & Ledgers',
+                'reports': 'Reports & System Analytics',
+                'admin-checkin': 'Core Team Check-In & Security Audit',
+                'driver-tasks': 'Assigned Delivery Tasks & Pickup Queue',
+                'driver-map': 'Live GPS Route Navigator & Campus Hubs',
+                'driver-earnings': 'Trip Earnings & Commission Payouts'
+            };
+            document.getElementById('page-title').innerText = titles[tabId] || 'BajetFood Portal';
+        }
+
+        function initDashboardChart() {
+            const ctx = document.getElementById('salesChart');
+            if (!ctx) return;
+            if (salesChartInstance) salesChartInstance.destroy();
+
+            salesChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['08:00', '10:00', '12:00 (Lunch)', '14:00', '16:00', '18:00 (Dinner)', '20:00'],
+                    datasets: [{
+                        label: 'Gross Sales (RM)',
+                        data: [45, 120, 380, 210, 150, 420, 190],
+                        borderColor: '#9d0759',
+                        backgroundColor: 'rgba(157, 7, 89, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#9d0759',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAllTables() {
+            renderRecentOrders();
+            renderFullOrders();
+            renderInventory();
+            renderPayments();
+            renderAdminCheckIns();
+            renderDriverTasks();
+            renderDriverEarnings();
+        }
+
+        function renderRecentOrders() {
+            const tbody = document.getElementById('recent-orders-table');
+            if (!tbody) return;
+            tbody.innerHTML = ordersData.slice(0, 3).map(o => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="py-4 px-6 font-extrabold text-white">${o.id}</td>
+                    <td class="py-4 px-6">
+                        <div class="text-slate-300 font-medium">${o.customer}</div>
+                        <a href="https://wa.me/${o.phone}" target="_blank" class="inline-flex items-center mt-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
+                            <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> WhatsApp Customer
+                        </a>
+                    </td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${o.items}</td>
+                    <td class="py-4 px-6 font-bold text-white">${o.total}</td>
+                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(o.status)}">${o.status}</span></td>
+                    <td class="py-4 px-6 text-right">
+                        <button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Process</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderFullOrders() {
+            const tbody = document.getElementById('full-orders-table');
+            if (!tbody) return;
+            tbody.innerHTML = ordersData.map(o => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="py-4 px-6 font-extrabold text-white">${o.id}</td>
+                    <td class="py-4 px-6">
+                        <div class="text-slate-300 font-medium">${o.customer}</div>
+                        <a href="https://wa.me/${o.phone}" target="_blank" class="inline-flex items-center mt-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
+                            <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> WhatsApp Customer
+                        </a>
+                    </td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${o.items}</td>
+                    <td class="py-4 px-6 font-bold text-white">${o.total}</td>
+                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(o.status)}">${o.status}</span></td>
+                    <td class="py-4 px-6 text-right space-x-2">
+                        <button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Advance</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusBadge(status) {
+            if (status === 'Delivered') return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+            if (status === 'Ready for Pickup' || status === 'In Transit') return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+            if (status === 'Preparing') return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+            return 'bg-slate-800 text-slate-400 border border-slate-700';
+        }
+
+        function advanceOrderStatus(id) {
+            const order = ordersData.find(o => o.id === id);
+            if (order) {
+                if (order.status === 'Pending') order.status = 'Preparing';
+                else if (order.status === 'Preparing') order.status = 'Ready for Pickup';
+                else if (order.status === 'Ready for Pickup') order.status = 'In Transit';
+                else order.status = 'Delivered';
+                renderAllTables();
+                showToast(`Order ${id} status updated to: ${order.status}`, 'success');
+            }
+        }
+
+        function filterOrders() {
+            const query = document.getElementById('order-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#full-orders-table tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-table');
+            if (!tbody) return;
+            tbody.innerHTML = inventoryData.map(i => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="py-4 px-6 font-extrabold text-white">${i.name}</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${i.category}</td>
+                    <td class="py-4 px-6 font-bold text-white">${i.stock}</td>
+                    <td class="py-4 px-6 text-slate-400 line-through text-xs">${i.standardPrice}</td>
+                    <td class="py-4 px-6 font-extrabold text-brand-400">${i.bajetPrice}</td>
+                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">${i.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPayments() {
+            const tbody = document.getElementById('payments-table');
+            if (!tbody) return;
+            tbody.innerHTML = paymentsData.map(p => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="py-4 px-6 font-extrabold text-white">${p.id}</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${p.date}</td>
+                    <td class="py-4 px-6 text-slate-300 font-medium">${p.order}</td>
+                    <td class="py-4 px-6 font-black text-white">${p.amount}</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${p.gateway}</td>
+                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${p.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAdminCheckIns() {
+            const tbody = document.getElementById('admin-checkin-table');
+            if (!tbody) return;
+            tbody.innerHTML = adminCheckIns.map(a => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="py-3 px-4 font-extrabold text-white">${a.admin}</td>
+                    <td class="py-3 px-4 text-slate-300">${a.station}</td>
+                    <td class="py-3 px-4 text-slate-400 text-xs font-mono">${a.device}</td>
+                    <td class="py-3 px-4 text-slate-400 text-xs">${a.time}</td>
+                </tr>
+            `).join('');
+        }
+
+        function handleAdminCheckIn(e) {
+            e.preventDefault();
+            const memberName = document.getElementById('admin-member-name').value;
+            const pin = document.getElementById('admin-pin').value;
+            const station = document.getElementById('admin-station').value;
+            if (pin.length < 4) {
+                showToast('Please enter a valid 6-digit security PIN.', 'error');
+                return;
+            }
+            adminCheckIns.unshift({
+                admin: memberName,
+                station: station,
+                device: '192.168.1.109 (Secure 5G Node)',
+                time: 'Just now'
+            });
+            renderAdminCheckIns();
+            showToast(`${memberName} shift check-in successfully cryptographically signed!`, 'success');
+            document.getElementById('admin-pin').value = '';
+        }
+
+        function renderDriverTasks() {
+            const tbody = document.getElementById('driver-tasks-table');
+            if (!tbody) return;
+            tbody.innerHTML = driverTasks.map(t => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="py-4 px-6 font-extrabold text-white">${t.id}</td>
+                    <td class="py-4 px-6 text-slate-300 font-medium">${t.destination}</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${t.items}</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs">${t.contact}</td>
+                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(t.status)}">${t.status}</span></td>
+                    <td class="py-4 px-6 text-right">
+                        <button onclick="updateDriverTask('${t.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Mark Delivered</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderDriverEarnings() {
+            const tbody = document.getElementById('driver-earnings-table');
+            if (!tbody) return;
+            tbody.innerHTML = driverEarnings.map(e => `
+                <tr class="hover:bg-slate-900/50 transition-colors">
+                    <td class="py-4 px-6 font-extrabold text-white">${e.date}</td>
+                    <td class="py-4 px-6 text-slate-300">${e.deliveries}</td>
+                    <td class="py-4 px-6 font-black text-white">${e.commission}</td>
+                    <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${e.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateDriverTask(id) {
+            const task = driverTasks.find(t => t.id === id);
+            if (task) {
+                task.status = 'Delivered';
+                renderDriverTasks();
+                showToast(`Delivery task ${id} successfully marked as Delivered!`, 'success');
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('aside');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('inset-y-0');
+            sidebar.classList.toggle('left-0');
+            sidebar.classList.toggle('z-50');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-slate-900 border-slate-700 text-white';
+            let icon = 'fa-circle-info text-blue-400';
+            if (type === 'success') {
+                bgClass = 'bg-slate-900 border-emerald-500/30 text-white';
+                icon = 'fa-circle-check text-brand-400';
+            } else if (type === 'error') {
+                bgClass = 'bg-slate-900 border-rose-500/30 text-white';
+                icon = 'fa-circle-exclamation text-rose-400';
+            }
+
+            toast.className = `flex items-center space-x-3 px-5 py-4 rounded-2xl border shadow-2xl backdrop-blur-xl animate-fade-in pointer-events-auto ${bgClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-base"></i>
+                <span class="text-xs font-bold">${message}</span>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Clock updater
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const timeEl = document.getElementById('system-time');
+            if (timeEl) timeEl.innerText = `Labu Hub Live • ${timeString}`;
+        }, 1000);
+    </script>
+</body>
+</html>
