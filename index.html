@@ -73,8 +73,8 @@
         <div class="max-w-md w-full bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl p-8 relative z-10 animate-fade-in">
             <!-- Brand Logo Header -->
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white shadow-xl shadow-brand-500/20 text-2xl mb-4 font-extrabold tracking-tight">
-                    BF
+                <div class="inline-flex items-center justify-center w-20 h-20 mb-4">
+                    <img src="logo.png" alt="BajetFood Logo" class="w-full h-full object-contain filter drop-shadow-xl" onerror="this.src='https://via.placeholder.com/80x80/9d0759/ffffff?text=BF'">
                 </div>
                 <h1 class="text-2xl font-extrabold text-white tracking-tight">BajetFood Portal</h1>
                 <p class="text-xs text-slate-400 mt-1 font-medium">Multi-Vendor Food Ordering & Fleet Management System</p>
@@ -122,12 +122,12 @@
     <div id="app-container" class="hidden min-h-screen flex bg-slate-900 text-slate-100">
         
         <!-- SIDEBAR NAVIGATION -->
-        <aside class="w-72 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between hidden lg:flex select-none">
+        <aside class="w-72 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between hidden lg:flex select-none z-30">
             <div>
                 <!-- Brand Header -->
                 <div class="p-6 border-b border-slate-800/80 flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white flex items-center justify-center font-black text-lg shadow-md shadow-brand-500/20">
-                        BF
+                    <div class="w-10 h-10 flex items-center justify-center">
+                        <img src="logo.png" alt="Logo" class="w-full h-full object-contain filter drop-shadow-md" onerror="this.src='https://via.placeholder.com/40x40/9d0759/ffffff?text=BF'">
                     </div>
                     <div>
                         <h2 class="font-extrabold text-white text-base tracking-tight">BajetFood</h2>
@@ -164,7 +164,7 @@
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-900">
             
             <!-- TOP NAVBAR HEADER -->
-            <header class="h-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-6 lg:px-8 flex items-center justify-between z-20">
+            <header class="h-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-6 lg:px-8 flex items-center justify-between z-20 sticky top-0">
                 <div class="flex items-center space-x-4">
                     <button onclick="toggleMobileSidebar()" class="lg:hidden text-slate-400 hover:text-white p-2 rounded-xl bg-slate-900 border border-slate-800">
                         <i class="fa-solid fa-bars"></i>
@@ -189,7 +189,7 @@
             </header>
 
             <!-- SCROLLABLE CONTENT VIEW AREA -->
-            <main class="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-900 space-y-6">
+            <main class="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-900 space-y-6 relative">
                 
                 <!-- TAB 1: DASHBOARD -->
                 <div id="tab-dashboard" class="tab-pane space-y-6 animate-fade-in">
@@ -374,7 +374,8 @@
                             <h3 class="text-lg font-extrabold text-white tracking-tight">BajetFood Core Team Management & Action Plan</h3>
                             <p class="text-xs text-slate-400 font-medium">Assigned responsibilities, deliverables, and quality assurance workflows</p>
                         </div>
-                        <button onclick="showToast('Team progress report updated and synchronized.', 'success')" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
+                        <!-- RESTRICTED BUTTON: Sync Team Status -->
+                        <button id="btn-sync-team" onclick="handleSyncTeam()" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
                             <i class="fa-solid fa-sync mr-1.5"></i> Sync Team Status
                         </button>
                     </div>
@@ -584,7 +585,8 @@
                             <h3 class="text-lg font-extrabold text-white tracking-tight">Inventory & Waste Reduction Management</h3>
                             <p class="text-xs text-slate-400 font-medium">Monitor daily ingredient batches, surplus meals, and dynamic pricing</p>
                         </div>
-                        <button onclick="showToast('New surplus batch broadcasted to student app.', 'success')" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
+                        <!-- RESTRICTED BUTTON: Add Surplus Batch -->
+                        <button id="btn-add-surplus" onclick="handleAddSurplus()" class="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white text-xs font-bold rounded-2xl shadow-lg shadow-brand-600/20 transition-all">
                             <i class="fa-solid fa-plus mr-1.5"></i> Add Surplus Batch
                         </button>
                     </div>
@@ -717,7 +719,8 @@
                                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Station Node / Hub Location</label>
                                     <input type="text" id="admin-station" value="Labu HQ Command Center" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
                                 </div>
-                                <button type="submit" class="w-full py-3.5 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-2xl text-xs transition-all shadow-lg">
+                                <!-- RESTRICTED BUTTON: Sign Check-In -->
+                                <button type="submit" id="btn-admin-checkin" class="w-full py-3.5 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-2xl text-xs transition-all shadow-lg">
                                     Sign Check-In Record
                                 </button>
                             </form>
@@ -944,11 +947,26 @@
                 if (emailHint) emailHint.innerText = 'Authorized core team email required (e.g. Najmuddin.bj@bajetfood.my)';
             } else if (role === 'vendor') {
                 emailInput.value = 'Aisyah.vp@bajetfood.my';
-                if (emailHint) emailHint.innerText = 'Authorized Vendor Partner email required (e.g. Aisyah.vp@bajetfood.my, Rina.vp@bajetfood.my)';
+                if (emailHint) emailHint.innerText = 'Authorized Vendor Partner email required (e.g. Aisyah.vp@bajetfood.my)';
             } else if (role === 'driver') {
                 emailInput.value = 'azman.r@bajetfood.my';
                 if (emailHint) emailHint.innerText = 'Authorized delivery rider email required (e.g. azman.r@bajetfood.my)';
             }
+        }
+
+        // RBAC: Function to visually update restricted HTML buttons
+        function updateRestrictedUI() {
+            const restrictedButtons = ['btn-sync-team', 'btn-add-surplus', 'btn-admin-checkin'];
+            restrictedButtons.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    if (currentRole !== 'admin') {
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            });
         }
 
         function handleLogin(e) {
@@ -962,26 +980,21 @@
             const profileInitials = document.getElementById('user-profile-initials');
 
             if (currentRole === 'admin') {
-                // Strict validation for Core Team Emails
                 const adminAccounts = {
                     'najmuddin.bj@bajetfood.my': { name: 'Muhammad Najmuddin', role: 'Project Manager', init: 'MN' },
                     'adibah.bj@bajetfood.my': { name: 'Adibah Afina', role: 'Business Analyst / Doc', init: 'AA' },
                     'norafnizaini.bj@bajetfood.my': { name: 'Norafnizaini', role: 'Tech Lead / QA', init: 'NF' },
                     'vivian.bj@bajetfood.my': { name: 'Vivian', role: 'Project Planner', init: 'VV' }
                 };
-
                 if (!adminAccounts[emailInput]) {
-                    showToast('Access Denied: Unrecognized core team email address.', 'error');
-                    return; // Halt login process
+                    showToast('Access Denied: Unrecognized core team email address.', 'error'); return;
                 }
-
                 const admin = adminAccounts[emailInput];
                 profileName.innerText = admin.name;
                 profileSubtitle.innerText = admin.role + ' (Core Team)';
                 profileInitials.innerText = admin.init;
 
             } else if (currentRole === 'vendor') {
-                // Strict validation for Vendor Partner Accounts
                 const vendorAccounts = {
                     'aisyah.vp@bajetfood.my': { name: 'Aisyah', role: 'Vendor Partner / Kitchen Lead', init: 'AY' },
                     'rina.vp@bajetfood.my': { name: 'Dr. Rina', role: 'Vendor Partner / Kitchen Lead', init: 'DR' },
@@ -990,40 +1003,33 @@
                     'nurhaliza@bajetfood.my': { name: 'Siti Nurhaliza', role: 'Vendor Partner / Kitchen Lead', init: 'SN' },
                     'nurhaliza.vp@bajetfood.my': { name: 'Siti Nurhaliza', role: 'Vendor Partner / Kitchen Lead', init: 'SN' }
                 };
-
                 if (!vendorAccounts[emailInput]) {
-                    showToast('Access Denied: Unrecognized vendor partner email address.', 'error');
-                    return; // Halt login process
+                    showToast('Access Denied: Unrecognized vendor partner email address.', 'error'); return;
                 }
-
                 const vendor = vendorAccounts[emailInput];
                 profileName.innerText = vendor.name;
                 profileSubtitle.innerText = vendor.role;
                 profileInitials.innerText = vendor.init;
 
             } else if (currentRole === 'driver') {
-                // Strict validation for Delivery Rider Emails
                 const driverAccounts = {
                     'azman.r@bajetfood.my': { name: 'Azman Rider', role: 'Fleet Unit A (Labu)', init: 'AR' },
                     'muthu.r@bajetfood.my': { name: 'Muthu Kumar', role: 'Fleet Unit B (Campus)', init: 'MK' }
                 };
-
                 if (!driverAccounts[emailInput]) {
-                    showToast('Access Denied: Unrecognized delivery rider email address.', 'error');
-                    return; // Halt login process
+                    showToast('Access Denied: Unrecognized delivery rider email address.', 'error'); return;
                 }
-
                 const driver = driverAccounts[emailInput];
                 profileName.innerText = driver.name;
                 profileSubtitle.innerText = driver.role;
                 profileInitials.innerText = driver.init;
             }
 
-            // Authentication passed, hide auth view and show app
             document.getElementById('view-auth').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
 
             renderNavigationForRole();
+            updateRestrictedUI();
             
             if (currentRole === 'vendor') switchTab('dashboard');
             else if (currentRole === 'driver') switchTab('driver-tasks');
@@ -1042,81 +1048,64 @@
             if (currentRole === 'vendor') {
                 html = `
                     <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="dashboard">
-                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i>
-                        <span>Dashboard</span>
+                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i> <span>Dashboard</span>
                     </button>
                     <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="orders">
-                        <i class="fa-solid fa-receipt w-5 text-sm"></i>
-                        <span>Manage Orders</span>
+                        <i class="fa-solid fa-receipt w-5 text-sm"></i> <span>Manage Orders</span>
                         <span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold">12</span>
                     </button>
                     <button onclick="switchTab('deliveries')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="deliveries">
-                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i>
-                        <span>Delivery Tracking</span>
+                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i> <span>Delivery Tracking</span>
                     </button>
                     <button onclick="switchTab('inventory')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="inventory">
-                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i>
-                        <span>Inventory & Waste</span>
+                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i> <span>Inventory & Waste</span>
                     </button>
                     <button onclick="switchTab('payments')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="payments">
-                        <i class="fa-solid fa-wallet w-5 text-sm"></i>
-                        <span>Payment Records</span>
+                        <i class="fa-solid fa-wallet w-5 text-sm"></i> <span>Payment Records</span>
                     </button>
                     <button onclick="switchTab('reports')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="reports">
-                        <i class="fa-solid fa-file-lines w-5 text-sm"></i>
-                        <span>Reports & Analytics</span>
+                        <i class="fa-solid fa-file-lines w-5 text-sm"></i> <span>Reports & Analytics</span>
                     </button>
                 `;
             } else if (currentRole === 'driver') {
                 html = `
                     <button onclick="switchTab('driver-tasks')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="driver-tasks">
-                        <i class="fa-solid fa-person-biking w-5 text-sm"></i>
-                        <span>Assigned Deliveries</span>
+                        <i class="fa-solid fa-person-biking w-5 text-sm"></i> <span>Assigned Deliveries</span>
                         <span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold">3</span>
                     </button>
                     <button onclick="switchTab('driver-map')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="driver-map">
-                        <i class="fa-solid fa-map-location-dot w-5 text-sm"></i>
-                        <span>Route GPS Navigator</span>
+                        <i class="fa-solid fa-map-location-dot w-5 text-sm"></i> <span>Route GPS Navigator</span>
                     </button>
                     <button onclick="switchTab('driver-earnings')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="driver-earnings">
-                        <i class="fa-solid fa-hand-holding-dollar w-5 text-sm"></i>
-                        <span>Trip Earnings & Payouts</span>
+                        <i class="fa-solid fa-hand-holding-dollar w-5 text-sm"></i> <span>Trip Earnings & Payouts</span>
                     </button>
                 `;
             } else if (currentRole === 'admin') {
                 html = `
                     <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-lg shadow-brand-900/30" data-tab="dashboard">
-                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i>
-                        <span>System Dashboard</span>
+                        <i class="fa-solid fa-chart-pie w-5 text-sm"></i> <span>System Dashboard</span>
                     </button>
                     <button onclick="switchTab('team')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="team">
-                        <i class="fa-solid fa-users-gear w-5 text-sm"></i>
-                        <span>Core Team Roles</span>
+                        <i class="fa-solid fa-users-gear w-5 text-sm"></i> <span>Core Team Roles</span>
                         <span class="ml-auto bg-brand-500/10 text-brand-400 border border-brand-500/20 text-[10px] px-1.5 py-0.5 rounded font-extrabold">4 MEMBERS</span>
                     </button>
                     <button onclick="switchTab('orders')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="orders">
-                        <i class="fa-solid fa-receipt w-5 text-sm"></i>
-                        <span>All System Orders</span>
+                        <i class="fa-solid fa-receipt w-5 text-sm"></i> <span>All System Orders</span>
                     </button>
                     <button onclick="switchTab('deliveries')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="deliveries">
-                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i>
-                        <span>Fleet Dispatch Control</span>
+                        <i class="fa-solid fa-truck-fast w-5 text-sm"></i> <span>Fleet Dispatch Control</span>
                     </button>
                     <button onclick="switchTab('inventory')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="inventory">
-                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i>
-                        <span>Vendor Inventories</span>
+                        <i class="fa-solid fa-boxes-stacked w-5 text-sm"></i> <span>Vendor Inventories</span>
                     </button>
                     <button onclick="switchTab('payments')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="payments">
-                        <i class="fa-solid fa-wallet w-5 text-sm"></i>
-                        <span>Financial Ledgers</span>
+                        <i class="fa-solid fa-wallet w-5 text-sm"></i> <span>Financial Ledgers</span>
                     </button>
                     <button onclick="switchTab('reports')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="reports">
-                        <i class="fa-solid fa-file-lines w-5 text-sm"></i>
-                        <span>System Reports</span>
+                        <i class="fa-solid fa-file-lines w-5 text-sm"></i> <span>System Reports</span>
                     </button>
                     <button onclick="switchTab('admin-checkin')" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all hover:bg-slate-900 text-slate-400 hover:text-white" data-tab="admin-checkin">
-                        <i class="fa-solid fa-user-shield w-5 text-sm"></i>
-                        <span>Team Security Check-In</span>
+                        <i class="fa-solid fa-user-shield w-5 text-sm"></i> <span>Team Security Check-In</span>
                         <span class="ml-auto bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] px-1.5 py-0.5 rounded font-extrabold">SECURE</span>
                     </button>
                 `;
@@ -1140,7 +1129,7 @@
                 return;
             }
             if ((tabId === 'admin-checkin' || tabId === 'team') && currentRole !== 'admin') {
-                showToast('Access Denied: Core Team portal is restricted to project leadership accounts only!', 'error');
+                showToast('Access Denied: Core Team portal is restricted to administrative project leaders!', 'error');
                 return;
             }
 
@@ -1202,18 +1191,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: {
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } }
-                        },
-                        y: {
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } }
-                        }
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } } }
                     }
                 }
             });
@@ -1232,7 +1213,13 @@
         function renderRecentOrders() {
             const tbody = document.getElementById('recent-orders-table');
             if (!tbody) return;
-            tbody.innerHTML = ordersData.slice(0, 3).map(o => `
+            tbody.innerHTML = ordersData.slice(0, 3).map(o => {
+                // RBAC: Restricted Button Logic 
+                const actionBtn = currentRole === 'admin' 
+                    ? `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Process</button>`
+                    : `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-slate-500 bg-slate-800 font-bold px-3 py-1.5 rounded-xl transition-all cursor-not-allowed">Restricted</button>`;
+                
+                return `
                 <tr class="hover:bg-slate-900/50 transition-colors">
                     <td class="py-4 px-6 font-extrabold text-white">${o.id}</td>
                     <td class="py-4 px-6">
@@ -1244,17 +1231,22 @@
                     <td class="py-4 px-6 text-slate-400 text-xs">${o.items}</td>
                     <td class="py-4 px-6 font-bold text-white">${o.total}</td>
                     <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(o.status)}">${o.status}</span></td>
-                    <td class="py-4 px-6 text-right">
-                        <button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Process</button>
-                    </td>
+                    <td class="py-4 px-6 text-right">${actionBtn}</td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function renderFullOrders() {
             const tbody = document.getElementById('full-orders-table');
             if (!tbody) return;
-            tbody.innerHTML = ordersData.map(o => `
+            tbody.innerHTML = ordersData.map(o => {
+                // RBAC: Restricted Button Logic 
+                const actionBtn = currentRole === 'admin' 
+                    ? `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Advance</button>`
+                    : `<button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-slate-500 bg-slate-800 font-bold px-3 py-1.5 rounded-xl transition-all cursor-not-allowed">Restricted</button>`;
+                
+                return `
                 <tr class="hover:bg-slate-900/50 transition-colors">
                     <td class="py-4 px-6 font-extrabold text-white">${o.id}</td>
                     <td class="py-4 px-6">
@@ -1266,11 +1258,10 @@
                     <td class="py-4 px-6 text-slate-400 text-xs">${o.items}</td>
                     <td class="py-4 px-6 font-bold text-white">${o.total}</td>
                     <td class="py-4 px-6"><span class="px-3 py-1 rounded-full text-[11px] font-bold ${getStatusBadge(o.status)}">${o.status}</span></td>
-                    <td class="py-4 px-6 text-right space-x-2">
-                        <button onclick="advanceOrderStatus('${o.id}')" class="text-xs text-white bg-brand-600 hover:bg-brand-500 font-bold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/20 transition-all">Advance</button>
-                    </td>
+                    <td class="py-4 px-6 text-right space-x-2">${actionBtn}</td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function getStatusBadge(status) {
@@ -1280,7 +1271,12 @@
             return 'bg-slate-800 text-slate-400 border border-slate-700';
         }
 
+        // RBAC Restricted Backend Actions
         function advanceOrderStatus(id) {
+            if (currentRole !== 'admin') {
+                showToast('Access Denied: Only the System Administrative / Core Team HQ account can advance order status.', 'error');
+                return;
+            }
             const order = ordersData.find(o => o.id === id);
             if (order) {
                 if (order.status === 'Pending') order.status = 'Preparing';
@@ -1290,6 +1286,22 @@
                 renderAllTables();
                 showToast(`Order ${id} status updated to: ${order.status}`, 'success');
             }
+        }
+
+        function handleSyncTeam() {
+            if (currentRole !== 'admin') {
+                showToast('Access Denied: Only the System Administrative account can synchronize team statuses.', 'error');
+                return;
+            }
+            showToast('Team progress report updated and synchronized.', 'success');
+        }
+
+        function handleAddSurplus() {
+            if (currentRole !== 'admin') {
+                showToast('Access Denied: Only the System Administrative account can add and broadcast surplus batches.', 'error');
+                return;
+            }
+            showToast('New surplus batch broadcasted to student app.', 'success');
         }
 
         function filterOrders() {
@@ -1346,19 +1358,27 @@
 
         function handleAdminCheckIn(e) {
             e.preventDefault();
+            // RBAC Restricted Action
+            if (currentRole !== 'admin') {
+                showToast('Access Denied: The Security Check-In portal is strictly restricted to Core Team HQ members.', 'error');
+                return;
+            }
             const memberName = document.getElementById('admin-member-name').value;
             const pin = document.getElementById('admin-pin').value;
             const station = document.getElementById('admin-station').value;
+            
             if (pin.length < 4) {
                 showToast('Please enter a valid 6-digit security PIN.', 'error');
                 return;
             }
+            
             adminCheckIns.unshift({
                 admin: memberName,
                 station: station,
                 device: '192.168.1.109 (Secure 5G Node)',
                 time: 'Just now'
             });
+            
             renderAdminCheckIns();
             showToast(`${memberName} shift check-in successfully cryptographically signed!`, 'success');
             document.getElementById('admin-pin').value = '';
